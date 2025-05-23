@@ -9,6 +9,18 @@ dotenv.config(
 )
 
 connectDB()
+    .then((response)=>{
+        app.on("error",(error)=>{
+            console.log(`App Error : ${error}`)
+            throw error
+        })
+        app.listen(process.env.PORT || 6000 ,()=>{
+            console.log(`Server Is Running On PORT : ${process.env.PORT}`)
+        })
+    })
+    .catch((error)=>{
+        console.log(`Connection Error : ${error}`)
+    })    
 
 
 /*import express from "express"
