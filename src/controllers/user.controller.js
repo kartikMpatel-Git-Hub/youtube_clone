@@ -3,6 +3,7 @@ import {ApiError} from "../utils/apiError.js"
 import {User} from "../models/user.model.js"
 import {uploadOnCloud} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/apiResponse.js"
+import jwt from "jsonwebtoken"
 
 const gerenateAccessAndRefereshToken = async (userId)=>{
     try {
@@ -93,10 +94,10 @@ const loginUser = asyncHandler(async (req,res)=>{
      *      then login msg else error message 
      */
 
-    if(!req.body || 1 < Object.keys(req.body).length < 4)
-        return res.status(400).json(new ApiError(400,"All Field Is Required!!"))
+    // if(!req.body || 1 < Object.keys(req.body).length < 4)
+    //     return res.status(400).json(new ApiError(400,"All Field Is Required!!"))
     let {email,userName,password} = req.body
-    if(!email || !userName){
+    if(!email && !userName){
         res.status(400).json(new ApiError(400,"Username Or Email Required !!"))
     }
     if(!password){
@@ -121,8 +122,7 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     const {accessToken,refreshToken} = await gerenateAccessAndRefereshToken(user._id)
 
-    const loggedInUser = user.select("-password -refreshToken")
-
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
     //Sending Cookies
     const options = {
         HttpOnly : true,
@@ -134,9 +134,10 @@ const loginUser = asyncHandler(async (req,res)=>{
     }
     return res.status(200)
                 .cookie("accessToken",accessToken,options)
-                .cookie("refereshToken",refreshToken,options)
-                .json(new ApiResponse(200,{
-                    user : loggedInUser,accessToken,refreshToken
+                .cookie("refreshToken",refreshToken,options)
+                .json(new ApiResponse(200,
+                    {
+                        user : loggedInUser,accessToken,refreshToken
                     },
                     "User Logged In Succesfuly"
                 ))
@@ -160,7 +161,47 @@ const logOutUser = asyncHandler(async (req,res)=>{
     return res
             .status(200)
             .clearCookie("accessToken",options)
-            .clearCookie("refereshToken",options)
+            .clearCookie("refreshToken",options)
             .json(new ApiResponse(200,{},"User Logged Out.."))
 })
-export {registerUser,loginUser,logOutUser}
+
+const refreshAccessToken = asyncHandler(async (req,res)=>{
+    // console.log(req.cookies.refreshToken)
+    if(!req.cookies?.refreshToken && !req.body?.refreshToken)
+        res.status(401).json(new ApiError(401,"Please Logged In!"))
+        
+    const incomingToken = req.cookies.refreshToken || req.body.refreshToken // If Mobile User
+    if(!incomingToken){
+        res.status(401).json(new ApiError(401,"Unauthorized Access !"))
+    }
+    
+    try {
+        const decodedToken = jwt.verify(incomingToken,process.env.ACCESS_TOKEN_SECRET)
+        const user = await User.findById(decodedToken?._id)
+        if(!user)
+            res.status(401).json(new ApiError(401,"Invalid Token!"))
+    
+        if(incomingToken !== user.refreshToken)
+            res.status(401).json(new ApiError(401,"Token Is Expire Or Used!"))
+        
+        const {accessToken,refreshToken : newRefreshToken} = await gerenateAccessAndRefereshToken(user._id)
+        // console.log(`new Token : ${newRefreshToken}`)
+        const options = {
+            HttpOnly : true,
+            secure : true
+        }
+        
+        res.status(200)
+        .cookie("accessToken",accessToken,options)
+        .cookie("refreshToken",newRefreshToken,options)
+        .json(new ApiResponse(200,
+            {
+                accessToken,
+                refreshToken : newRefreshToken
+            },"Token Refresed !!"
+        ))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Generating new Token!"))
+    }
+})
+export {registerUser,loginUser,logOutUser,refreshAccessToken}
