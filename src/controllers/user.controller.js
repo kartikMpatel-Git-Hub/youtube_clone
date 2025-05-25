@@ -3,7 +3,21 @@ import {ApiError} from "../utils/apiError.js"
 import {User} from "../models/user.model.js"
 import {uploadOnCloud} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/apiResponse.js"
-import { compareSync } from "bcrypt"
+
+const gerenateAccessAndRefereshToken = async (userId)=>{
+    try {
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({validateBeforeSave : false}) //it will Save Without Validatting Again
+
+        return {accessToken,refreshToken}
+    } catch (error) {
+        throw new ApiError(500,"Something Went Wrong While Generating Tokens..")
+    }
+}
 
 const registerUser = asyncHandler( async (req,res) =>{
     // res.status(200).json({
@@ -67,4 +81,86 @@ const registerUser = asyncHandler( async (req,res) =>{
     )
 })
 
-export {registerUser}
+const loginUser = asyncHandler(async (req,res)=>{
+    /**
+     * 1.Get Details From User Like Userid And Password 
+     * 2.check is Anyfield Is Empty Or Not if Empty Then Give Error 
+     * 3.if Both field are fill Then get data from data base based on username
+     * 4.if not userexist then give error usernot found 
+     * 5.aftre getting data compare password with password which given 
+     *      (Because it encryted we have to check in thier way)
+     * 6.if password is right generate access and referesh token and send cookies 
+     *      then login msg else error message 
+     */
+
+    if(!req.body || 1 < Object.keys(req.body).length < 4)
+        return res.status(400).json(new ApiError(400,"All Field Is Required!!"))
+    let {email,userName,password} = req.body
+    if(!email || !userName){
+        res.status(400).json(new ApiError(400,"Username Or Email Required !!"))
+    }
+    if(!password){
+        res.status(400).json(new ApiError(400,"Enter Password First !!"))
+    }
+    // if(email){
+        
+    // }else{
+        
+    // }
+    const user = await User.findOne({
+        $or :[{userName},{email}] //check either anyof then is Exist based on it 
+    })
+
+    if(!user)
+        res.status(404).json(new ApiError(404,"User Does Not Exist !!"))
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid)
+        res.status(401).json(new ApiError(401,"Invalid Password !!"))
+
+    const {accessToken,refreshToken} = await gerenateAccessAndRefereshToken(user._id)
+
+    const loggedInUser = user.select("-password -refreshToken")
+
+    //Sending Cookies
+    const options = {
+        HttpOnly : true,
+        secure : true
+
+        // By Default It is false So anyone from Frontend can modify but if 
+        // it is true  then only edit by servers (Visible But Not modify by frontend)
+        
+    }
+    return res.status(200)
+                .cookie("accessToken",accessToken,options)
+                .cookie("refereshToken",refreshToken,options)
+                .json(new ApiResponse(200,{
+                    user : loggedInUser,accessToken,refreshToken
+                    },
+                    "User Logged In Succesfuly"
+                ))
+})
+
+const logOutUser = asyncHandler(async (req,res)=>{
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set : {
+                refreshToken : undefined
+            }
+        },{
+            new : true
+        }
+    )
+    const options = {
+        HttpOnly : true,
+        secure : true
+    }
+    return res
+            .status(200)
+            .clearCookie("accessToken",options)
+            .clearCookie("refereshToken",options)
+            .json(new ApiResponse(200,{},"User Logged Out.."))
+})
+export {registerUser,loginUser,logOutUser}
