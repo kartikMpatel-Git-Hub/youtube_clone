@@ -36,10 +36,10 @@ router.route("/changeUserName").post(verifyJWT,changeUserUserName)
 //change email
 router.route("/changeEmail").post(verifyJWT,changeUserEmail)
 
-// //change Avatar
-// router.route("/changeAvatar").post(verifyJWT,changeUserAvatar)
+//change Avatar
+router.route("/changeAvatar").post(upload.single("avatar"),verifyJWT,changeUserAvatar)
 
-// //change coverImage
-// router.route("/changeCoverImage").post(verifyJWT,changeUserCoverImage)
+//change coverImage
+router.route("/changeCoverImage").post(upload.single("coverImage"),verifyJWT,changeUserCoverImage)
 
 export default router

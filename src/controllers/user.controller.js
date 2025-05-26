@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/apiError.js"
 import {User} from "../models/user.model.js"
-import {uploadOnCloud} from "../utils/cloudinary.js"
+import {uploadOnCloud,removeImage} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
 
@@ -209,7 +209,10 @@ const changeUserPassword = asyncHandler(async (req,res) => {
     try {
         const {oldPassword,newPassword} = req.body
         const user = await User.findById(req.user?._id)
-        console.log(user)
+        
+        if(!oldPassword || !newPassword)
+            res.status(401).json(new ApiError(401,"All Field Is Required!!"))
+
         const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
     
         if(!isPasswordCorrect)
@@ -223,13 +226,15 @@ const changeUserPassword = asyncHandler(async (req,res) => {
     }
 
 })
-
-
 //Why This is Different Then password Because in password we put one hook which encryp our password 
 //but in other frield we don't need that's why
 const changeUserEmail = asyncHandler(async(req,res)=>{
     try {
         const {email} = req.body
+        
+        if(!email)
+            res.status(401).json(new ApiError(401,"email Is Required!!"))
+
         const user = await User.findByIdAndUpdate(req.user?._id,
             {
                 $set : {
@@ -244,10 +249,14 @@ const changeUserEmail = asyncHandler(async(req,res)=>{
         res.status(401).json(new ApiError(401,"Something Went Wrong While Changing Email !!"+error))
     }
 })
+
 const changeUserUserName = asyncHandler(async(req,res)=>{
     try {
         const {userName} = req.body
-        console.log(userName)
+        // console.log(userName)
+        if(!userName)
+            res.status(401).json(new ApiError(401,"userName Is Required!!"))
+
         // if(User.findOne(userName)){
         //     res.status(401).json(new ApiError(401,"UserName Already Exist !!"))
         // }
@@ -267,27 +276,28 @@ const changeUserUserName = asyncHandler(async(req,res)=>{
     }
 })
 
+
+/**create utility for delete image from cloud */
 const changeUserAvatar = asyncHandler(async (req,res)=>{
     try {
         const localFilePath = req.file?.path
         if(!localFilePath)
             res.status(401).json(new ApiError(401,"File Not Found !"))
-        
         const avatar = await uploadOnCloud(localFilePath)
         if(!avatar.url){
             res.status(401).json(new ApiError(401,"Error While Uploading File !"))
         }
-        const user = await User.findByIdAndUpdate(req.user?._id,
-            {
-                $set : {
-                    avatar : avatar.url
-                }
-            },
-            {
-                new : true
-            }
-        ).select("-password")
-        res.status(200).json(new ApiResponse(200,user,"userName Updated Succesfully !!"))
+        const user = await User.findById(req.user?._id).select("-password -refreshToken")
+        const oldImage = user.avatar
+        user.avatar = avatar.url
+        await user.save({validateBeforeSave : false})
+        let cloudFileName = oldImage.split('/')
+        cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
+        const response = await removeImage(cloudFileName)  
+        if(!response){
+            res.status(401).json(new ApiError(401,"Something Wrong While Deleting",error.message))
+        }
+        res.status(200).json(new ApiResponse(200,user,"New avatar Updated Succesfully !!"))
     } catch (error) {
         res.status(401).json(new ApiError(401,"Something Went Wrong While Changing Avatar !!"))
     }
@@ -298,24 +308,23 @@ const changeUserCoverImage = asyncHandler(async (req,res)=>{
         const localFilePath = req.file?.path
         if(!localFilePath)
             res.status(401).json(new ApiError(401,"File Not Found !"))
-        
         const coverImage = await uploadOnCloud(localFilePath)
-        if(!avatar.url){
+        if(!coverImage.url){
             res.status(401).json(new ApiError(401,"Error While Uploading File !"))
         }
-        const user = await User.findByIdAndUpdate(req.user?._id,
-            {
-                $set : {
-                    coverImage : coverImage.url
-                }
-            },
-            {
-                new : true
-            }
-        ).select("-password")
-        res.status(200).json(new ApiResponse(200,user,"userName Updated Succesfully !!"))
+        const user = await User.findById(req.user?._id).select("-password -refreshToken")
+        const oldImage = user.coverImage
+        user.coverImage = coverImage.url
+        await user.save({validateBeforeSave : false})
+        let cloudFileName = oldImage.split('/')
+        cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
+        const response = await removeImage(cloudFileName)  
+        if(!response){
+            res.status(401).json(new ApiError(401,"Something Wrong While Deleting",error.message))
+        }
+        res.status(200).json(new ApiResponse(200,user,"coverImage Updated Succesfully !!"))
     } catch (error) {
-        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing coverImage !!"))
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing coverImage !!",error.message))
     }
 })
 
@@ -333,4 +342,5 @@ export {
     changeUserEmail,
     changeUserUserName,
     changeUserAvatar,
-    changeUserCoverImage}
+    changeUserCoverImage
+}
