@@ -204,4 +204,133 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
         res.status(401).json(new ApiError(401,"Something Went Wrong While Generating new Token!"))
     }
 })
-export {registerUser,loginUser,logOutUser,refreshAccessToken}
+
+const changeUserPassword = asyncHandler(async (req,res) => {
+    try {
+        const {oldPassword,newPassword} = req.body
+        const user = await User.findById(req.user?._id)
+        console.log(user)
+        const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+    
+        if(!isPasswordCorrect)
+            res.status(401).json(new ApiError(401,"Invalid Old Password !!"))
+    
+        user.password = newPassword
+        await user.save({validateBeforeSave : false})
+        res.status(200).json(new ApiResponse(200,{},"Password Change Succesfuly !"))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing Password !!"))
+    }
+
+})
+
+
+//Why This is Different Then password Because in password we put one hook which encryp our password 
+//but in other frield we don't need that's why
+const changeUserEmail = asyncHandler(async(req,res)=>{
+    try {
+        const {email} = req.body
+        const user = await User.findByIdAndUpdate(req.user?._id,
+            {
+                $set : {
+                    email
+                } 
+            },
+            {new : true}
+            // This Help When We want to return the object which changed or after update
+        ).select("-password")
+        res.status(200).json(new ApiResponse(200,user,"Email Updated Succesfully !!"))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing Email !!"+error))
+    }
+})
+const changeUserUserName = asyncHandler(async(req,res)=>{
+    try {
+        const {userName} = req.body
+        console.log(userName)
+        // if(User.findOne(userName)){
+        //     res.status(401).json(new ApiError(401,"UserName Already Exist !!"))
+        // }
+        const user = await User.findByIdAndUpdate(req.user?._id,
+            {
+                $set : {
+                    userName
+                } 
+            },
+            {new : true}
+            // This Help When We want to return the object which changed or after update
+        ).select("-password")
+        console.log(user)
+        res.status(200).json(new ApiResponse(200,user,"userName Updated Succesfully !!"))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing userName !!"+error.message))
+    }
+})
+
+const changeUserAvatar = asyncHandler(async (req,res)=>{
+    try {
+        const localFilePath = req.file?.path
+        if(!localFilePath)
+            res.status(401).json(new ApiError(401,"File Not Found !"))
+        
+        const avatar = await uploadOnCloud(localFilePath)
+        if(!avatar.url){
+            res.status(401).json(new ApiError(401,"Error While Uploading File !"))
+        }
+        const user = await User.findByIdAndUpdate(req.user?._id,
+            {
+                $set : {
+                    avatar : avatar.url
+                }
+            },
+            {
+                new : true
+            }
+        ).select("-password")
+        res.status(200).json(new ApiResponse(200,user,"userName Updated Succesfully !!"))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing Avatar !!"))
+    }
+})
+
+const changeUserCoverImage = asyncHandler(async (req,res)=>{
+    try {
+        const localFilePath = req.file?.path
+        if(!localFilePath)
+            res.status(401).json(new ApiError(401,"File Not Found !"))
+        
+        const coverImage = await uploadOnCloud(localFilePath)
+        if(!avatar.url){
+            res.status(401).json(new ApiError(401,"Error While Uploading File !"))
+        }
+        const user = await User.findByIdAndUpdate(req.user?._id,
+            {
+                $set : {
+                    coverImage : coverImage.url
+                }
+            },
+            {
+                new : true
+            }
+        ).select("-password")
+        res.status(200).json(new ApiResponse(200,user,"userName Updated Succesfully !!"))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing coverImage !!"))
+    }
+})
+
+const getCurrentUser = asyncHandler(async (req,res)=>{
+    return res.status(200).json(200,req.user,"Current User Fetched !")
+})
+
+export {
+    registerUser,
+    loginUser,
+    logOutUser,
+    refreshAccessToken,
+    changeUserPassword,
+    getCurrentUser,
+    changeUserEmail,
+    changeUserUserName,
+    changeUserAvatar,
+    changeUserCoverImage}
