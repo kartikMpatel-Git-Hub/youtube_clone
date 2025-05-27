@@ -4,6 +4,7 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloud,removeImage} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
 
 const gerenateAccessAndRefereshToken = async (userId)=>{
     try {
@@ -276,6 +277,28 @@ const changeUserUserName = asyncHandler(async(req,res)=>{
     }
 })
 
+const changeUserFullName = asyncHandler(async(req,res)=>{
+    try {
+        const {fullName} = req.body
+        // console.log(userName)
+        if(!fullName)
+            res.status(401).json(new ApiError(401,"fullName Is Required!!"))
+        const user = await User.findByIdAndUpdate(req.user?._id,
+            {
+                $set : {
+                    fullName
+                } 
+            },
+            {new : true}
+            // This Help When We want to return the object which changed or after update
+        ).select("-password")
+        console.log(user)
+        res.status(200).json(new ApiResponse(200,user,"fullName Updated Succesfully !!"))
+    } catch (error) {
+        res.status(401).json(new ApiError(401,"Something Went Wrong While Changing fullName !!"+error.message))
+    }
+})
+
 
 /**create utility for delete image from cloud */
 const changeUserAvatar = asyncHandler(async (req,res)=>{
@@ -332,15 +355,155 @@ const getCurrentUser = asyncHandler(async (req,res)=>{
     return res.status(200).json(200,req.user,"Current User Fetched !")
 })
 
+const getUserChannelProfile = asyncHandler(async (req,res)=>{
+    try {
+        const userName = req.query.userName
+        console.log(userName)
+        if(!userName?.trim())
+            res.status(401).json(new ApiError(401,"userName Not Found !!"))
+
+        const channel = await User.aggregate([
+            {
+                $match:{ 
+                    userName : userName?.toLowerCase()
+                }
+                //Just Like Where Conditions
+            },
+            {
+                $lookup : { // same as left join or subquery with some simmiler fields
+                    from : "subscriptions", // from which table 
+                    localField : "_id", // compare field from current table
+                    foreignField : "channel", // simmiler field of other table
+                    as : "subscribers" // name of new firld
+                }
+            },
+            {
+                $lookup : { // same as left join or subquery with some simmiler fields
+                    from : "subscriptions", // from which table 
+                    localField : "_id", // compare field from current table
+                    foreignField : "subscriber", // simmiler field of other table
+                    as : "subscribed" // name of new firld
+                }
+            },
+            {
+                $addFields : { //it will add new field in table 
+                    subscribersCount : {
+                        $size : "$subscribers" // total recoard / documents selected
+                    },
+                    subscribedCount : {
+                        $size : "$subscribed" // total recoard / documents selected
+                    },
+                    isSubscribed : {
+                        $cond : { // // For Condition
+                            if : {$in :[req.user?._id,"$subscribers.subscriber"]}, // if for condition
+                            //in for check is field exist on selected document
+                            then : true, // condition true
+                            else : false // conditions false
+                        }
+                    }
+                }
+            },
+            {
+                // selecting only those field which requires
+                $project : {
+                    fullName : 1,
+                    userName : 1,
+                    subscribersCount : 1,
+                    subscribedCount : 1,
+                    isSubscribed : 1,
+                    avatar : 1,
+                    coverImage : 1,
+                    email : 1
+                }
+            }
+        ])
+        if(!channel?.length)
+            res.status(401).json(new ApiError(401,"Chennel Not Found !!"))
+
+        return res.status(200).json(new ApiResponse(200,channel[0],"Chennel Data !!"))
+    } catch (error) {
+        return res.status(401).json(new ApiError(401,"Something Went Wrong While Getting Data !!"))
+    }
+})
+
+const getWatchHistory = asyncHandler(async(req,res)=>{
+    try {
+        const user = await User.aggregate([
+            {
+                $match : {
+                    /**because mongoose not work here we have to explicitly convert string into object id
+                        the req.user._id give us string and mongoose convert into mongodb object id but it won't
+                         work here so we have to do it by own */
+                    _id : new mongoose.Types.ObjectId(req.user._id),//deplricated
+                    // _id : new mongoose.Types.ObjectId("0",repeat(req.user._id)),
+                },
+            },
+            {
+                /**It Will Select All Video data from the video table */
+                $lookup : { 
+                    from : "videos",
+                    localField : "watchHistory",
+                    foreignField : "_id",
+                    as : "watchHistory",
+                    /**Now We Have Data In form of id but we need owner data from video table 
+                     * because it only return the id so we have to get all data 
+                     */
+                    pipeline : [
+                        {
+                            /**
+                             * it will help to get data again from user table 
+                             * and filter the data like name and avatar 
+                             */
+                            $lookup : {
+                                from : "users",
+                                localField : "owner",
+                                foreignField : "_id",
+                                as : "owner",
+                                pipeline : [
+                                    {
+                                        $project : {
+                                            fullName : 1,
+                                            userName : 1,
+                                            avatar : 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        /**
+                         * it will add extra field owner in form of array but for easy way 
+                         * we have to convert it into simple field 
+                         */
+                        {
+                            $addFields : {
+                                owner : {
+                                    $first : "$owner" //first index data so simple with first
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ])
+        console.log(user)
+        return res.status(200).json(new ApiResponse(200,user[0].watchHistory,"Chennel Data !!"))
+    } catch (error) {
+        return res.status(401).json(new ApiError(401,"Something Went Wrong While Getting Data !!"))
+    }
+})
+
 export {
     registerUser,
     loginUser,
     logOutUser,
     refreshAccessToken,
+    changeUserFullName,
     changeUserPassword,
     getCurrentUser,
     changeUserEmail,
     changeUserUserName,
     changeUserAvatar,
-    changeUserCoverImage
+    changeUserCoverImage,
+    getUserChannelProfile,
+    getWatchHistory
 }
