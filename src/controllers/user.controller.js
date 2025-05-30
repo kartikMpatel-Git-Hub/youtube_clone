@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/apiError.js"
 import {User} from "../models/user.model.js"
-import {uploadOnCloud,removeImage} from "../utils/cloudinary.js"
+import {uploadOnCloud,removeCloudImage} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose"
@@ -315,7 +315,7 @@ const changeUserAvatar = asyncHandler(async (req,res)=>{
         await user.save({validateBeforeSave : false})
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
-        const response = await removeImage(cloudFileName)
+        const response = await removeCloudImage(cloudFileName)
         if(!response){
             res.status(401).json(new ApiError(401,"Something Wrong While Deleting",error.message))
         }
@@ -340,7 +340,7 @@ const changeUserCoverImage = asyncHandler(async (req,res)=>{
         await user.save({validateBeforeSave : false})
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
-        const response = await removeImage(cloudFileName)  
+        const response = await removeCloudImage(cloudFileName)  
         if(!response){
             res.status(401).json(new ApiError(401,"Something Wrong While Deleting",error.message))
         }
@@ -429,7 +429,8 @@ const getUserChannelProfile = asyncHandler(async (req,res)=>{
 
 const getWatchHistory = asyncHandler(async(req,res)=>{
     try {
-        const user = await User.aggregate([
+        const user = await User.aggregate(
+        [
             {
                 $match : {
                     /**because mongoose not work here we have to explicitly convert string into object id

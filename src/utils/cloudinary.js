@@ -25,7 +25,7 @@ const uploadOnCloud = async (localFile)=>{
     }
 }
 
-const removeImage = async (cloudinaryFileName)=>{
+const removeCloudImage = async (cloudinaryFileName)=>{
     try {
         if(!cloudinaryFileName)
             return null
@@ -33,11 +33,28 @@ const removeImage = async (cloudinaryFileName)=>{
             // console.log(error)
             return response
         })
-        // console.log("Deleted from Cloudinary..")
+        console.log("Deleted from Cloudinary..")
         return response
     } catch (error) {
         console.log("Something Went Wrong While Deleting from Cloudinary..")
     }
 }
+const removeCloudVideo = async (cloudinaryFileName)=>{
+    try {
+        if (!cloudinaryFileName) 
+            return null;
 
-export {uploadOnCloud,removeImage}
+        const publicId = cloudinaryFileName.replace(/\.[^/.]+$/, "")
+        const response = await cloudinary.uploader.destroy(publicId, {
+            resource_type: 'video',
+        })
+
+        console.log("Deleted from Cloudinary:", response)
+        return response
+    } catch (error) {
+        console.log("Something went wrong while deleting from Cloudinary:", error);
+        return null;
+    }
+}
+
+export {uploadOnCloud,removeCloudImage,removeCloudVideo}

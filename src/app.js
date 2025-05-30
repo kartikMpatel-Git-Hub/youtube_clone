@@ -24,13 +24,13 @@ import userRouter from './routes/user.route.js'
 import videoRouter from './routes/video.route.js'
 import deshboardRouter from './routes/deshboard.route.js'
 
-app.use("/api/v1/comment",commentRouter)
-app.use("/api/v1/like",likeRouter)
-app.use("/api/v1/playList",playListRouter)
-app.use("/api/v1/subscription",subscriptionRouter)
-app.use("/api/v1/tweet",tweetRouter)
+app.use("/api/v1/comments",commentRouter)
+app.use("/api/v1/likes",likeRouter)
+app.use("/api/v1/playLists",playListRouter)
+app.use("/api/v1/subscriptions",subscriptionRouter)
+app.use("/api/v1/tweets",tweetRouter)
 app.use("/api/v1/users",userRouter)
-app.use("/api/v1/video",videoRouter)
+app.use("/api/v1/videos",videoRouter)
 app.use("/api/v1/deshboard",deshboardRouter)
 
 //http://localhost:4000/api/v1/users/register

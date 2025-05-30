@@ -1,9 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import {ApiError} from "../utils/apiError.js"
-import {User} from "../models/user.model.js"
-import mongoose from "mongoose"
-import { uploadOnCloud ,removeImage} from "../utils/cloudinary.js"
+import { uploadOnCloud ,removeCloudImage,removeCloudVideo} from "../utils/cloudinary.js"
 import { Video } from "../models/video.model.js"
 
 const uploadVideo = asyncHandler(async(req,res)=>{
@@ -61,7 +59,28 @@ const uploadVideo = asyncHandler(async(req,res)=>{
 
 const removeVideo = asyncHandler(async(req,res)=>{
     try {
-        return res.status(200).json(new ApiResponse(200,{},"<Message>"))
+        let videoId = req.params.videoId
+        if(!videoId)
+            return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
+        const video = await Video.findById(videoId)
+        console.log(video)
+        if(!video)
+            return res.status(404).json(new ApiError(401,"Video Not Found !!")) 
+        const thumbnailurl = video.thumbnail
+        const videourl = video.videoFile
+        let cloudThumbnail = thumbnailurl.split('/')
+        let cloudVideo = videourl.split('/')
+        cloudThumbnail = cloudThumbnail[cloudThumbnail.length-1].split('.')[0]
+        cloudVideo = cloudVideo[cloudVideo.length-1].split('.')[0]
+        const response1 = await removeCloudImage(cloudThumbnail)
+        if(!response1)
+            return res.status(504).json(new ApiError(501,"Something Went Wrong While Deleting From Cloud !!"))
+        console.log(cloudVideo)
+        const response2 = await removeCloudVideo(cloudVideo)
+        if(!response2)
+            return res.status(504).json(new ApiError(501,"Something Went Wrong While Deleting From Cloud !!"))
+        await Video.findByIdAndDelete(videoId)
+        return res.status(200).json(new ApiResponse(200,{},"Video Deleted !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
     }
@@ -110,7 +129,7 @@ const changeThumbnail = asyncHandler(async(req,res)=>{
         await video.save()
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
-        const response = await removeImage(cloudFileName) 
+        const response = await removeCloudImage(cloudFileName) 
         if(!response){
             res.status(401).json(new ApiError(401,"Something Wrong While Deleting",error.message))
         }
@@ -161,7 +180,7 @@ const togglePublishStatus = asyncHandler(async(req,res)=>{
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
     }
-})
+})//
 
 const getMyVideos = asyncHandler(async(req,res)=>{
     try {
@@ -169,15 +188,17 @@ const getMyVideos = asyncHandler(async(req,res)=>{
             owner : req.user?._id
         })
         console.log(videos)
-        return res.status(200).json(new ApiResponse(200,videos,"<Message>"))
+        return res.status(200).json(new ApiResponse(200,videos,"Your Videos"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong Here While..!!"+error.message))
     }
-})
+})//
 
 const getAllVideos = asyncHandler(async(req,res)=>{
     try {
-        return res.status(200).json(new ApiResponse(200,{},"<Message>"))
+        const allVideo = await Video.find()
+        console.log(allVideo)
+        return res.status(200).json(new ApiResponse(200,allVideo,"All Video"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While all videos!!"))
     }
@@ -209,4 +230,14 @@ const yourController = asyncHandler(async(req,res)=>{
     }
 })
 
-export { uploadVideo,removeVideo,changeTitle,changeThumbnail,changeDescription,togglePublishStatus ,getAllVideos,getMyVideos,getVideo}
+export { 
+    uploadVideo,
+    removeVideo,
+    changeTitle,
+    changeThumbnail,
+    changeDescription,
+    togglePublishStatus,
+    getAllVideos,
+    getMyVideos,
+    getVideo
+}
