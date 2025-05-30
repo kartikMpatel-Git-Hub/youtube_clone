@@ -40,18 +40,18 @@ router.route("/changeUserName").post(verifyJWT,changeUserUserName)
 router.route("/changeEmail").post(verifyJWT,changeUserEmail)
 
 //change Avatar
-router.route("/changeAvatar").post(upload.single("avatar"),verifyJWT,changeUserAvatar)
+router.route("/changeAvatar").post(verifyJWT,upload.single("avatar"),changeUserAvatar)
 
 //change coverImage
-router.route("/changeCoverImage").post(upload.single("coverImage"),verifyJWT,changeUserCoverImage)
+router.route("/changeCoverImage").post(verifyJWT,upload.single("coverImage"),changeUserCoverImage)
 
 //get current user data
-router.route("/getUserData").post(verifyJWT,getCurrentUser)
+router.route("/getUserData").get(verifyJWT,getCurrentUser)
 
 //get Channel Page data
-router.route("/getChannelProfile").post(verifyJWT,getUserChannelProfile)
+router.route("/getChannelProfile/:userName").get(verifyJWT,getUserChannelProfile)
 
 //get Watch History data
-router.route("/getWatchHistory").post(verifyJWT,getWatchHistory)
+router.route("/getWatchHistory").get(verifyJWT,getWatchHistory)
 
 export default router

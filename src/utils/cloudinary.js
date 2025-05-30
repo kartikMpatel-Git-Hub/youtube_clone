@@ -13,7 +13,7 @@ const uploadOnCloud = async (localFile)=>{
         const response = await cloudinary.uploader.upload(localFile,{
             resource_type : "auto"
         })
-        console.log(`FIle Is Uploaded`)
+        // console.log(`FIle Is Uploaded`)
         fs.unlinkSync(localFile)
         return response
     } catch (error) {
@@ -33,7 +33,7 @@ const removeImage = async (cloudinaryFileName)=>{
             // console.log(error)
             return response
         })
-        console.log("Deleted from Cloudinary..")
+        // console.log("Deleted from Cloudinary..")
         return response
     } catch (error) {
         console.log("Something Went Wrong While Deleting from Cloudinary..")

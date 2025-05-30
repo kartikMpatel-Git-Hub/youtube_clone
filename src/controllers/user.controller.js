@@ -149,7 +149,7 @@ const logOutUser = asyncHandler(async (req,res)=>{
         req.user._id,
         {
             $set : {
-                refreshToken : undefined
+                refreshToken : null
             }
         },{
             new : true
@@ -299,7 +299,6 @@ const changeUserFullName = asyncHandler(async(req,res)=>{
     }
 })
 
-
 /**create utility for delete image from cloud */
 const changeUserAvatar = asyncHandler(async (req,res)=>{
     try {
@@ -316,7 +315,7 @@ const changeUserAvatar = asyncHandler(async (req,res)=>{
         await user.save({validateBeforeSave : false})
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
-        const response = await removeImage(cloudFileName)  
+        const response = await removeImage(cloudFileName)
         if(!response){
             res.status(401).json(new ApiError(401,"Something Wrong While Deleting",error.message))
         }
@@ -352,12 +351,14 @@ const changeUserCoverImage = asyncHandler(async (req,res)=>{
 })
 
 const getCurrentUser = asyncHandler(async (req,res)=>{
-    return res.status(200).json(200,req.user,"Current User Fetched !")
+    const user = await User.findById(req.user?._id).select("-password -refreshToken")
+    // console.log(user)
+    return res.status(200).json(new ApiResponse(200,user,"Current User Fetched !"))
 })
 
 const getUserChannelProfile = asyncHandler(async (req,res)=>{
     try {
-        const userName = req.query.userName
+        const userName = req.params.userName
         console.log(userName)
         if(!userName?.trim())
             res.status(401).json(new ApiError(401,"userName Not Found !!"))
@@ -395,7 +396,7 @@ const getUserChannelProfile = asyncHandler(async (req,res)=>{
                     },
                     isSubscribed : {
                         $cond : { // // For Condition
-                            if : {$in :[req.user?._id,"$subscribers.subscriber"]}, // if for condition
+                            if : {$in :[req?.user?._id,"$subscribers.subscriber"]}, // if for condition
                             //in for check is field exist on selected document
                             then : true, // condition true
                             else : false // conditions false
@@ -486,7 +487,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
             }
         ])
         console.log(user)
-        return res.status(200).json(new ApiResponse(200,user[0].watchHistory,"Chennel Data !!"))
+        return res.status(200).json(new ApiResponse(200,user[0].watchHistory,"Your Watch History !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While Getting Data !!"))
     }
