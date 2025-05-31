@@ -24,7 +24,7 @@ youtube_clone/
   ├── models/              # Mongoose models for MongoDB
   ├── routes/              # API routes organized by feature
   ├── utils/               # Utility functions and helpers
-  └── app.js               # express app
+  ├── app.js               # express app
   └── index.js             # Entry point of the application
 
 ````
