@@ -19,39 +19,18 @@ router.route("/register").post(
     registerUser
 )
 router.route("/login").post(loginUser)
-//Secure Routes
 
-//logout
-router.route("/logout").post(verifyJWT,logOutUser)
+router.route("/changePassword").patch(verifyJWT,changeUserPassword)
+router.route("/changeFullName").patch(verifyJWT,changeUserFullName)
+router.route("/changeUserName").patch(verifyJWT,changeUserUserName)
+router.route("/changeEmail").patch(verifyJWT,changeUserEmail)
+router.route("/changeAvatar").patch(verifyJWT,upload.single("avatar"),changeUserAvatar)
+router.route("/changeCoverImage").patch(verifyJWT,upload.single("coverImage"),changeUserCoverImage)
 
-//refreshToken
-router.route("/newRefreshToken").post(refreshAccessToken)
-
-//change Password
-router.route("/changePassword").post(verifyJWT,changeUserPassword)
-
-//change userName
-router.route("/changeFullName").post(verifyJWT,changeUserFullName)
-
-//change userName
-router.route("/changeUserName").post(verifyJWT,changeUserUserName)
-
-//change email
-router.route("/changeEmail").post(verifyJWT,changeUserEmail)
-
-//change Avatar
-router.route("/changeAvatar").post(verifyJWT,upload.single("avatar"),changeUserAvatar)
-
-//change coverImage
-router.route("/changeCoverImage").post(verifyJWT,upload.single("coverImage"),changeUserCoverImage)
-
-//get current user data
+router.route("/logout").get(verifyJWT,logOutUser)
+router.route("/newRefreshToken").get(refreshAccessToken)
 router.route("/getUserData").get(verifyJWT,getCurrentUser)
-
-//get Channel Page data
 router.route("/getChannelProfile/:userName").get(verifyJWT,getUserChannelProfile)
-
-//get Watch History data
 router.route("/getWatchHistory").get(verifyJWT,getWatchHistory)
 
 export default router

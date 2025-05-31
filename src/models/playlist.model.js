@@ -1,20 +1,24 @@
 import mongoose,{Schema} from "mongoose";
 
 const playListSchema = new Schema({
-    name : {
+    title : {
         type : String,
         required : true
     },
     description : {
         type : String,
     },
-    video : {
+    video : [{
         type : Schema.Types.ObjectId,
         ref : "Video"
-    },
+    }],
     owner : {
         type : Schema.Types.ObjectId,
         ref : "User"
+    },
+    visibility : {
+        type : Boolean,
+        default : false
     }
 },{timestamps : true})
 

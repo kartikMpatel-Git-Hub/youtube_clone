@@ -4,6 +4,7 @@ import {ApiError} from "../utils/apiError.js"
 import { uploadOnCloud ,removeCloudImage,removeCloudVideo} from "../utils/cloudinary.js"
 import { Video } from "../models/video.model.js"
 import mongoose from "mongoose"
+import { User } from "../models/user.model.js"
 
 const uploadVideo = asyncHandler(async(req,res)=>{
     try {
@@ -165,18 +166,20 @@ const togglePublishStatus = asyncHandler(async(req,res)=>{
         let videoId = req.params.videoId
         if(!videoId)
             return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
-        const video = await Video.find({
-            _id : videoId
+        const video = await Video.findOne({
+            _id : videoId,
+            owner : req.user._id
         })
-        if(!video[0])
+        if(!video)
             return res.status(401).json(new ApiError(401,"Not Authorized"))
-        if(video[0].isPublished){
-            video[0].isPublished = false
-        }else{
-            video[0].isPublished = true
-        }
-        video[0].save()
-        return res.status(200).json(new ApiResponse(200,video[0],"Status Updated !"))
+        video.isPublished = !video.isPublished
+        video.save()
+        // if(video[0].isPublished){
+        //     video[0].isPublished = false
+        // }else{
+        //     video[0].isPublished = true
+        // }
+        return res.status(200).json(new ApiResponse(200,video,"Status Updated !"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
     }
@@ -217,13 +220,40 @@ const getVideo = asyncHandler(async(req,res)=>{
             return res.status(404).json(new ApiError(401,"Video Not Found !!"))
         if(!video.isPublished)
             return res.status(400).json(new ApiError(401,"Video is Private !!"))
-        video.views += 1
-        video.save() 
         return res.status(200).json(new ApiResponse(200,video,"Video Fetched !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While getting video!!"))
     }
 })//
+
+const viewVideo = asyncHandler(async(req,res)=>{
+    try {
+        let videoId = req.params.videoId
+        if(!videoId)
+            return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
+        const video = await Video.findById(videoId)
+        if(!video)
+            return res.status(404).json(new ApiError(401,"Video Not Found !!"))
+        if(video.owner.toString() === req.user._id.toString() && !video.isPublished){
+            return res.status(200).json(new ApiResponse(200,video,"Your Video Fetched !!"))
+        }
+        if(!video.isPublished)
+            return res.status(400).json(new ApiError(401,"Video is Private !!"))
+        video.views += 1
+        video.save()
+        const user = await User.findByIdAndUpdate(req.user._id,
+            {
+                $addToSet : {
+                    watchHistory : videoId
+                }
+            }
+        )
+        
+        return res.status(200).json(new ApiResponse(200,video,"Video Fetched !!"))
+    } catch (error) {
+        return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
+    }
+})
 
 const yourController = asyncHandler(async(req,res)=>{
     try {
@@ -242,5 +272,6 @@ export {
     togglePublishStatus,
     getAllVideos,
     getMyVideos,
-    getVideo
+    getVideo,
+    viewVideo
 }

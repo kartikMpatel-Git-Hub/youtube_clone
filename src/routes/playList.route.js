@@ -1,16 +1,21 @@
 import { Router } from "express"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
-import {createPlayList,addVideo,changeDescription,changeTitle,removeVideo,getMyAllPlayList,getPlayList,deletePlayList} from "../controllers/playList.controller.js"
+import {createPlayList,addVideo,changeDescription,changeTitle,removeVideo,getMyAllPlayList,getPlayList,deletePlayList,toggleVisibility} from "../controllers/playList.controller.js"
 const router = Router()
 
 router.use(verifyJWT)
 
-router.route("/").post(createPlayList)
-router.route("/changeTitle/:playListId").get(changeTitle)
-router.route("/changeDescription/:playListId").get(changeDescription)
-router.route("/addVideo/:videoId/:playListId").get(addVideo)
-router.route("/removeVideo/:videoId/:playListId").get(removeVideo)
+router.route("/createPlayList").post(createPlayList)
+router.route("/addVideo/:videoId/:playListId").post(addVideo)
 
-router.route("/getPlayList/:userId").get(getMyAllPlayList)
-router.route("/getMyPlayList/:playListId").get(getPlayList)
+router.route("/changeTitle/:playListId").patch(changeTitle)
+router.route("/changeDescription/:playListId").patch(changeDescription)
+router.route("/toggleVisibility/:playListId").patch(toggleVisibility)
+
+router.route("/removeVideo/:videoId/:playListId").delete(removeVideo)
+router.route("/removePlaylist/:playListId").delete(deletePlayList)
+
+router.route("/getMyPlayList").get(getMyAllPlayList)
+router.route("/getPlayList/:playListId").get(getPlayList)
+
 export default router
