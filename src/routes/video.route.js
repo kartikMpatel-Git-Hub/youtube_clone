@@ -22,7 +22,8 @@ router.route("/uploadVideo")
 
 router.route("/")
         .get(getAllVideos)
-
+        
+        
 router.route("/video/:videoId")
         .get(getVideo)
         .delete(removeVideo)
@@ -40,6 +41,6 @@ router.route("/changeDescription/:videoId")
         .patch(changeDescription)
 
 router.route("/toggledStatus/:videoId")
-        .patch(togglePublishStatus)
+        .patch(togglePublishStatus) 
 
 export default router

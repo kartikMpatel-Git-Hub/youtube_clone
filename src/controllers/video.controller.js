@@ -3,6 +3,7 @@ import {ApiResponse} from "../utils/apiResponse.js"
 import {ApiError} from "../utils/apiError.js"
 import { uploadOnCloud ,removeCloudImage,removeCloudVideo} from "../utils/cloudinary.js"
 import { Video } from "../models/video.model.js"
+import mongoose from "mongoose"
 
 const uploadVideo = asyncHandler(async(req,res)=>{
     try {
@@ -63,7 +64,7 @@ const removeVideo = asyncHandler(async(req,res)=>{
         if(!videoId)
             return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
         const video = await Video.findById(videoId)
-        console.log(video)
+        // console.log(video)
         if(!video)
             return res.status(404).json(new ApiError(401,"Video Not Found !!")) 
         const thumbnailurl = video.thumbnail
@@ -75,7 +76,7 @@ const removeVideo = asyncHandler(async(req,res)=>{
         const response1 = await removeCloudImage(cloudThumbnail)
         if(!response1)
             return res.status(504).json(new ApiError(501,"Something Went Wrong While Deleting From Cloud !!"))
-        console.log(cloudVideo)
+        // console.log(cloudVideo)
         const response2 = await removeCloudVideo(cloudVideo)
         if(!response2)
             return res.status(504).json(new ApiError(501,"Something Went Wrong While Deleting From Cloud !!"))
@@ -165,9 +166,8 @@ const togglePublishStatus = asyncHandler(async(req,res)=>{
         if(!videoId)
             return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
         const video = await Video.find({
-            owner : req.user?._id
+            _id : videoId
         })
-        console.log(video[0])
         if(!video[0])
             return res.status(401).json(new ApiError(401,"Not Authorized"))
         if(video[0].isPublished){
@@ -187,7 +187,6 @@ const getMyVideos = asyncHandler(async(req,res)=>{
         const videos = await Video.find({
             owner : req.user?._id
         })
-        console.log(videos)
         return res.status(200).json(new ApiResponse(200,videos,"Your Videos"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong Here While..!!"+error.message))
@@ -196,8 +195,11 @@ const getMyVideos = asyncHandler(async(req,res)=>{
 
 const getAllVideos = asyncHandler(async(req,res)=>{
     try {
-        const allVideo = await Video.find()
-        console.log(allVideo)
+        const allVideo = await Video.find(
+            {
+                isPublished : true
+            }
+        )
         return res.status(200).json(new ApiResponse(200,allVideo,"All Video"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While all videos!!"))
@@ -215,7 +217,8 @@ const getVideo = asyncHandler(async(req,res)=>{
             return res.status(404).json(new ApiError(401,"Video Not Found !!"))
         if(!video.isPublished)
             return res.status(400).json(new ApiError(401,"Video is Private !!"))
-
+        video.views += 1
+        video.save() 
         return res.status(200).json(new ApiResponse(200,video,"Video Fetched !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While getting video!!"))
