@@ -23,7 +23,15 @@ import tweetRouter from './routes/tweet.route.js'
 import userRouter from './routes/user.route.js'
 import videoRouter from './routes/video.route.js'
 import deshboardRouter from './routes/deshboard.route.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+})
 app.use("/api/v1/comments",commentRouter)
 app.use("/api/v1/likes",likeRouter)
 app.use("/api/v1/playLists",playListRouter)
