@@ -15,15 +15,17 @@ Backend API is live on: [https://your-backend-url.onrender.com](https://your-bac
 
 ```
 
-youtube\_clone/
-├── app/                 # Core app configuration
-├── controllers/         # Business logic for each feature
-├── db/                  # Database connection and config
-├── middleware/          # Authentication, file handling, etc.
-├── models/              # Mongoose models for MongoDB
-├── routes/              # API routes organized by feature
-├── utils/               # Utility functions and helpers
-└── index.js             # Entry point of the application
+youtube_clone/
+├── public/
+├── src/
+  ├── controllers/         # Business logic for each feature
+  ├── db/                  # Database connection and config
+  ├── middleware/          # Authentication, file handling, etc.
+  ├── models/              # Mongoose models for MongoDB
+  ├── routes/              # API routes organized by feature
+  ├── utils/               # Utility functions and helpers
+  └── app.js               # express app
+  └── index.js             # Entry point of the application
 
 ````
 
