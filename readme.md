@@ -7,7 +7,7 @@ A fully-featured backend for a YouTube Clone application developed using **Node.
 
 ## 🚀 Live Deployment
 
-Backend API is live on: [https://your-backend-url.onrender.com]([https://your-backend-url.onrender.com](https://youtube-clone-mitq.onrender.com))
+Backend API is live on: [View](https://youtube-clone-mitq.onrender.com)
 
 
 
