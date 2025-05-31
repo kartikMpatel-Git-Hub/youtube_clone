@@ -1,33 +1,19 @@
-# 🎥 YouTube Clone
+# YouTube Clone 🎥
 
-A fully functional clone of YouTube built as a web application project to replicate core functionalities such as video browsing, search, playback, and channel navigation.
+A simple YouTube clone web application that allows users to watch, search, and explore videos — mimicking basic functionalities of YouTube.
 
 ## 🚀 Features
 
-- 🔍 Video Search Functionality
-- ▶️ Video Playback with Player Controls
-- 📺 Channel Details and Recommendations
-- 🧭 Sidebar Navigation
-- 🌙 Dark and Light Mode (optional)
-- 📱 Responsive Design
+- 📺 Watch embedded videos
+- 🔍 Search functionality with video title filtering
+- 🧭 Video categories for easy navigation
+- 💡 Responsive design for mobile and desktop
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: HTML, CSS, JavaScript (Vanilla or Framework like React.js)
-- **Backend**: [If applicable] Node.js / Express / Any other
-- **API**: YouTube Data API v3 (for fetching real video data)
-- **Version Control**: Git and GitHub
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend (optional):** JSON Server or YouTube Data API (if used)
+- **Deployment:** GitHub Pages / Live Server (for local testing)
 
 ## 📂 Project Structure
 
-```bash
-youtube_clone/
-├── public/              # Static assets
-├── src/
-│   ├── components/      # Reusable components (e.g., Navbar, VideoCard)
-│   ├── pages/           # Pages (Home, Video Detail)
-│   ├── App.js           # Main App component
-│   └── index.js         # Entry point
-├── .gitignore
-├── package.json
-└── README.md
