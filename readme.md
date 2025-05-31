@@ -1,17 +1,19 @@
-Here's a professional and well-structured `README.md` file for your Node.js project `youtube_clone`:
 
 # 🎥 YouTube Clone – Node.js Backend
 
 A fully-featured backend for a YouTube Clone application developed using **Node.js**, following best practices in architecture, security, and modularity. This backend powers essential features such as video streaming, commenting, liking, subscriptions, playlists, and user management.
 
+
+
 ## 🚀 Live Deployment
 
 Backend API is live on: [https://your-backend-url.onrender.com](https://your-backend-url.onrender.com)
 
----
+
 
 ## 🏗️ Project Structure
 
+```
 
 youtube\_clone/
 ├── app/                 # Core app configuration
@@ -25,7 +27,7 @@ youtube\_clone/
 
 ````
 
----
+
 
 ## 📦 Features
 
@@ -53,7 +55,6 @@ youtube\_clone/
 
 ### 🔔 Subscriptions
 - Subscribe/unsubscribe to channels
-- Get subscribed videos feed
 
 ### 🐦 Tweets (Micro-posts)
 - Post short messages (like tweets)
@@ -105,7 +106,7 @@ Each model is paired with a corresponding controller and router. A full Postman 
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/youtube_clone.git
+git clone https://github.com/kartikMpatel-Git-Hub/youtube_clone.git
 cd youtube_clone
 ````
 
@@ -120,7 +121,7 @@ npm install
 Create a `.env` file in the root directory with the following:
 
 ```
-PORT=5000
+PORT=4000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -145,18 +146,9 @@ The backend is deployed using **Render**. Configure environment variables and us
 ## 🧑‍💻 Author
 
 **Kartik Patel**
-📧 Contact: \[Your Email]
-🔗 Portfolio: \[Your Portfolio URL]
+
+📧 Contact: [kartikpatel7892@gmal.com](mailto:kartikpatel7892@gmal.com)
+
+🔗 LinkedIn: [https://www.linkedin.com/in/kartikmpatel/](https://www.linkedin.com/in/kartikmpatel/)
 
 ---
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-```
-
----
-
-Let me know if you want a matching `Postman` collection, `API docs`, or frontend `README` too.
-```
