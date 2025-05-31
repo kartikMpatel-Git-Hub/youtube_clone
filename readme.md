@@ -1,8 +1,5 @@
 Here's a professional and well-structured `README.md` file for your Node.js project `youtube_clone`:
 
----
-
-```markdown
 # 🎥 YouTube Clone – Node.js Backend
 
 A fully-featured backend for a YouTube Clone application developed using **Node.js**, following best practices in architecture, security, and modularity. This backend powers essential features such as video streaming, commenting, liking, subscriptions, playlists, and user management.
@@ -15,7 +12,6 @@ Backend API is live on: [https://your-backend-url.onrender.com](https://your-bac
 
 ## 🏗️ Project Structure
 
-```
 
 youtube\_clone/
 ├── app/                 # Core app configuration
