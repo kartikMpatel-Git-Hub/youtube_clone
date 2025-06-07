@@ -17,7 +17,7 @@ connectDB()
             throw error
         })
         app.listen(process.env.PORT || 6000 ,()=>{
-            console.log(`Server Is On`)
+            console.log(`Server Is On click Here : http://localhost:4000/`)
         })
     })
     .catch((error)=>{

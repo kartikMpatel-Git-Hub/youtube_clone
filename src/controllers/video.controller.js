@@ -185,12 +185,41 @@ const togglePublishStatus = asyncHandler(async(req,res)=>{
     }
 })//
 
+const getVideoById =async (videoId)=>{
+    const video = await Video.aggregate([
+        {
+            $match : {
+                _id : new mongoose.Types.ObjectId(videoId)
+            }
+        },
+        {
+            $lookup : {
+                from : "likes",
+                localField : "_id",
+                foreignField : "video",
+                as : "likes",
+            }
+        },{
+            $addFields : {
+                likes : {
+                    $size : "$likes"
+                }
+            }
+        }
+    ])
+    return video[0]
+}
+
 const getMyVideos = asyncHandler(async(req,res)=>{
     try {
-        const videos = await Video.find({
+        const myVideos = await Video.find({
             owner : req.user?._id
         })
-        return res.status(200).json(new ApiResponse(200,videos,"Your Videos"))
+        const videos = []
+        for(let i = 0; i < myVideos.length; i++){
+            videos.push(await getVideoById(myVideos[i]._id))
+        }
+        return res.status(200).json(new ApiResponse(200,videos,"Your Videos Fetched"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong Here While..!!"+error.message))
     }
@@ -203,7 +232,10 @@ const getAllVideos = asyncHandler(async(req,res)=>{
                 isPublished : true
             }
         )
-        return res.status(200).json(new ApiResponse(200,allVideo,"All Video"))
+        const videos = []
+        for(let  i = 0; i < allVideo.length; i++)
+            videos.push(await getVideoById(allVideo[i]._id))
+        return res.status(200).json(new ApiResponse(200,videos,"All Video"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While all videos!!"))
     }
@@ -214,7 +246,7 @@ const getVideo = asyncHandler(async(req,res)=>{
         let videoId = req.params.videoId
         if(!videoId)
             return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
-        const video = await Video.findById(videoId)
+        const video = await getVideoById(videoId)
         
         if(!video)
             return res.status(404).json(new ApiError(401,"Video Not Found !!"))
@@ -248,12 +280,15 @@ const viewVideo = asyncHandler(async(req,res)=>{
                 }
             }
         )
-        
-        return res.status(200).json(new ApiResponse(200,video,"Video Fetched !!"))
+        const videoView = await getVideoById(videoId)
+        if(!videoView)
+            return res.status(400).json(new ApiError(401,"Problem White Getting Video !!"))
+
+        return res.status(200).json(new ApiResponse(200,videoView,"Video Fetched !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
     }
-})
+})//
 
 const yourController = asyncHandler(async(req,res)=>{
     try {
