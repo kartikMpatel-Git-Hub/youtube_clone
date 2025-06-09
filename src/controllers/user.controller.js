@@ -127,7 +127,8 @@ const loginUser = asyncHandler(async (req,res)=>{
         httpOnly: true,
         secure: false, // for local run        
         // secure: true, // aftre deployed
-
+        sameSite: "Lax",
+        maxAge: 24 * 60 * 60 * 1000,
         // sameSite: "Lax",    
         // maxAge: 24 * 60 * 60 * 1000
         // By Default It is false So anyone from Frontend can modify but if 
