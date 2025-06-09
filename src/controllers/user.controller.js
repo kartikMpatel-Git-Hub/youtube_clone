@@ -22,65 +22,63 @@ const gerenateAccessAndRefereshToken = async (userId)=>{
 }
 
 const registerUser = asyncHandler( async (req,res) =>{
-    // res.status(200).json({
-    //     message : "Ok",
-    //     name : "Kartik"
-    // })
+    try {
+    
+        if(!req.body || Object.keys(req.body).length != 4)
+            return res.status(400).json(new ApiError(400,"All Field Is Required!!"))
+        let {fullName,email,userName,password} = req.body
+        if(
+            [fullName,email,userName,password].some((field)=>field?.trim() === "")
+        ){
+            return res.status(400).json(new ApiError(400,"All Is Required !!"));
+        }
+        const existingUser = await User.findOne({
+            $or : [{ userName }, { email }]
+        });
+        if (existingUser) {
+            return res.status(409).json(new ApiError(409, "User Already Exists With Email Or Username"));
+        }
+        let AvatarLocalPath;
+        let coverImageLocalPath;
+        if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0)
+            coverImageLocalPath = req.files.coverImage[0].path
+        if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0)
+            AvatarLocalPath = req.files.avatar[0].path
+        else    
+            return res.status(400).json(new ApiError(400,"Avatar File Is Required !!"));
 
-    if(!req.body || Object.keys(req.body).length != 4)
-        return res.status(400).json(new ApiError(400,"All Field Is Required!!"))
-    let {fullName,email,userName,password} = req.body
-    // console.log(req.body)
-    // console.log(req.files)
-    if(
-        [fullName,email,userName,password].some((field)=>field?.trim() === "")
-    ){
-        return res.status(400).json(new ApiError(400,"All Is Required !!"));
-    }
-    const existingUser = await User.findOne({
-        $or : [{ userName }, { email }]
-    });
-    if (existingUser) {
-        return res.status(409).json(new ApiError(409, "User Already Exists With Email Or Username"));
-    }
-    let AvatarLocalPath;
-    let coverImageLocalPath;
-    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0)
-        coverImageLocalPath = req.files.coverImage[0].path
-    if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0)
-        AvatarLocalPath = req.files.avatar[0].path
-    else    
-        return res.status(400).json(new ApiError(400,"Avatar File Is Required !!"));
+        if(AvatarLocalPath === coverImageLocalPath)
+            return res.status(401).json(new ApiError(401,"Avatar File And CoverImage Must Be Different Required !!"));
 
-    const avatar = await uploadOnCloud(AvatarLocalPath)
-    const coverImage = await uploadOnCloud(coverImageLocalPath)
+        const avatar = await uploadOnCloud(AvatarLocalPath)
+        const coverImage = await uploadOnCloud(coverImageLocalPath)
+        
+        
+        if(!avatar){
+            return res.status(401).json(new ApiError(401,"Avatar File Is Required !!"));
+        }
+        
+        const user = await User.create({
+            fullName,
+            avatar : avatar.url,
+            coverImage : coverImage?.url || "",
+            email,
+            password,
+            userName:userName.toLowerCase() 
+        })
+        const createdUser = await User.findById(user._id).select(
+            "-password -refreshToken"
+        )
+        if(!createdUser){
+            return res.status(500).json(new ApiError(500,"Something Went Wrong While Registering.."));
+        }
     
-    // console.log(avatar)
-    
-    if(!avatar){
-        return res.status(401).json(new ApiError(401,"Avatar File Is Required !!"));
+        return res.status(201).json(
+            new ApiResponse(200,createdUser,"User Created !")
+        )
+    } catch (error) {
+        new res.status(300).json(new ApiError(300,"Something went Wrong While Register !!"))
     }
-    
-    const user = await User.create({
-        fullName,
-        avatar : avatar.url,
-        coverImage : avatar?.url || "",
-        email,
-        password,
-        userName:userName.toLowerCase() 
-    })
-    
-    // console.log(user)
-    const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken"
-    )
-    if(!createdUser){
-        return res.status(500).json(new ApiError(500,"Something Went Wrong While Registering.."));
-    }
-
-    return res.status(201).json(
-        new ApiResponse(200,createdUser,"User Created !")
-    )
 })
 
 const loginUser = asyncHandler(async (req,res)=>{
@@ -126,9 +124,10 @@ const loginUser = asyncHandler(async (req,res)=>{
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
     //Sending Cookies
     const options = {
-        HttpOnly : true,
-        secure : true
-
+        httpOnly: true,
+        secure: true,        
+        // sameSite: "Lax",    
+        // maxAge: 24 * 60 * 60 * 1000
         // By Default It is false So anyone from Frontend can modify but if 
         // it is true  then only edit by servers (Visible But Not modify by frontend)
         
@@ -140,7 +139,7 @@ const loginUser = asyncHandler(async (req,res)=>{
                     {
                         user : loggedInUser,accessToken,refreshToken
                     },
-                    "User Logged In Succesfuly"
+                    "User Logged In Succesfuly..."
                 ))
 })
 
@@ -351,9 +350,69 @@ const changeUserCoverImage = asyncHandler(async (req,res)=>{
 })
 
 const getCurrentUser = asyncHandler(async (req,res)=>{
+
     const user = await User.findById(req.user?._id).select("-password -refreshToken")
+    const userName = user.userName
+    const channel = await User.aggregate([
+            {
+                $match:{ 
+                    userName : userName?.toLowerCase()
+                }
+                //Just Like Where Conditions
+            },
+            {
+                $lookup : { // same as left join or subquery with some simmiler fields
+                    from : "subscriptions", // from which table 
+                    localField : "_id", // compare field from current table
+                    foreignField : "channel", // simmiler field of other table
+                    as : "subscribers" // name of new firld
+                }
+            },
+            {
+                $lookup : { // same as left join or subquery with some simmiler fields
+                    from : "subscriptions", // from which table 
+                    localField : "_id", // compare field from current table
+                    foreignField : "subscriber", // simmiler field of other table
+                    as : "subscribed" // name of new firld
+                }
+            },
+            {
+                $addFields : { //it will add new field in table 
+                    subscribersCount : {
+                        $size : "$subscribers" // total recoard / documents selected
+                    },
+                    subscribedCount : {
+                        $size : "$subscribed" // total recoard / documents selected
+                    },
+                    isSubscribed : {
+                        $cond : { // // For Condition
+                            if : {$in :[req?.user?._id,"$subscribers.subscriber"]}, // if for condition
+                            //in for check is field exist on selected document
+                            then : true, // condition true
+                            else : false // conditions false
+                        }
+                    }
+                }
+            },
+            {
+                // selecting only those field which requires
+                $project : {
+                    fullName : 1,
+                    userName : 1,
+                    subscribersCount : 1,
+                    subscribedCount : 1,
+                    isSubscribed : 1,
+                    avatar : 1,
+                    coverImage : 1,
+                    email : 1
+                }
+            }
+        ])
     // console.log(user)
-    return res.status(200).json(new ApiResponse(200,user,"Current User Fetched !"))
+    if(!channel?.length)
+            res.status(401).json(new ApiError(401,"Chennel Not Found !!"))
+
+    return res.status(200).json(new ApiResponse(200,channel["0"],"Current User Fetched !"))
 })
 
 const getUserChannelProfile = asyncHandler(async (req,res)=>{
