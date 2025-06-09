@@ -123,12 +123,19 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
     //Sending Cookies
+    const isProduction = process.env.NODE_ENV === "production";
     const options = {
         httpOnly: true,
-        secure: false, // for local run        
-        // secure: true, // aftre deployed
-        sameSite: "Lax",
-        maxAge: 24 * 60 * 60 * 1000,
+        secure: isProduction,
+        sameSite: isProduction ? "None" : "Lax",
+        maxAge: 24 * 60 * 60 * 1000
+
+
+        // httpOnly: true,
+        // secure: true, // for local run        
+        // // secure: true, // aftre deployed
+        // sameSite: "None",
+        // maxAge: 24 * 60 * 60 * 1000,
         // sameSite: "Lax",    
         // maxAge: 24 * 60 * 60 * 1000
         // By Default It is false So anyone from Frontend can modify but if 
