@@ -2,7 +2,8 @@ import { Router } from "express"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 import {upload} from "../middlewares/multer.middleware.js"
 import {uploadVideo,removeVideo,changeTitle,changeThumbnail,changeDescription,
-    togglePublishStatus ,getAllVideos,getMyVideos,getVideo,viewVideo} from "../controllers/video.controller.js"
+    togglePublishStatus ,getAllVideos,getMyVideos,getVideo,viewVideo,engagementVideo,
+    getChannelVideos} from "../controllers/video.controller.js"
 const router = Router()
 
 router.use(verifyJWT)
@@ -16,9 +17,11 @@ router.route("/changeTitle/:videoId").patch(changeTitle)
 router.route("/changeDescription/:videoId").patch(changeDescription)
 router.route("/toggledStatus/:videoId").patch(togglePublishStatus) 
 
+router.route("/userEngagement/:videoId").get(engagementVideo)
 router.route("/watchVideo/:videoId").get(viewVideo)
 router.route("/getVideo/:videoId").get(getVideo)
 router.route("/getMyVideos").get(getMyVideos)
+router.route("/getChannelVideos/:userName").get(getChannelVideos)
 router.route("/").get(getAllVideos)
 
 export default router

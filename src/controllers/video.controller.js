@@ -3,6 +3,8 @@ import {ApiResponse} from "../utils/apiResponse.js"
 import {ApiError} from "../utils/apiError.js"
 import { uploadOnCloud ,removeCloudImage,removeCloudVideo} from "../utils/cloudinary.js"
 import { Video } from "../models/video.model.js"
+import {Like} from "../models/like.model.js"
+import {Subscription} from "../models/subscription.model.js"
 import mongoose from "mongoose"
 import { User } from "../models/user.model.js"
 
@@ -199,10 +201,30 @@ const getVideoById =async (videoId)=>{
                 foreignField : "video",
                 as : "likes",
             }
+        },
+        {
+            $lookup : {
+                from : "users",
+                localField : "owner",
+                foreignField : "_id",
+                as : "owner",
+                pipeline : [
+                    {
+                        $project : {
+                            userName : 1,
+                            avatar : 1,
+                            _id : 0
+                        }
+                    }
+                ]
+            }
         },{
             $addFields : {
                 likes : {
                     $size : "$likes"
+                },
+                owner : {
+                    $first : "$owner"
                 }
             }
         }
@@ -290,6 +312,62 @@ const viewVideo = asyncHandler(async(req,res)=>{
     }
 })//
 
+const engagementVideo  = asyncHandler(async(req,res)=>{
+    try {
+        let videoId = req.params.videoId
+        if(!videoId)
+            return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
+        const video = await Video.findById(videoId)
+        if(!video)
+            return res.status(404).json(new ApiError(401,"Video Not Found !!"))
+        // console.log(videoId)
+        const isLiked = await Like.findOne({
+            owner : new mongoose.Types.ObjectId(req.user?._id),
+            video : new mongoose.Types.ObjectId(videoId)
+        })
+        const isSubscribed = await Subscription.findOne({
+            subscriber : new mongoose.Types.ObjectId(req.user._id),
+            channel : new mongoose.Types.ObjectId(video.owner)
+        })
+        let response = {}
+        if(!isLiked)
+            response.isLiked = false
+        else    
+            response.isLiked = true
+        if(!isSubscribed)
+            response.isSubscribed = false
+        else 
+            response.isSubscribed = true
+
+        return res.status(200).json(new ApiResponse(200,response,"User Data"))
+    } catch (error) {
+        return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
+    }
+})
+
+const getChannelVideos = asyncHandler(async(req,res)=>{
+    try {
+        const userName = req.params.userName
+        if(!userName)
+            return res.status(200).json(new ApiError(300,"User Not Found"))
+
+        const user = await User.findOne({
+            userName
+        })
+        const myVideos = await Video.find({
+            owner : user._id,
+            isPublished : true
+        })
+        const videos = []
+        for(let i = 0; i < myVideos.length; i++){
+            videos.push(await getVideoById(myVideos[i]._id))
+        }
+        return res.status(200).json(new ApiResponse(200,videos,"Videos Fetched"))
+    } catch (error) {
+        return res.status(401).json(new ApiError(401,"Something Went Wrong Here While..!!"+error.message))
+    }
+})
+
 const yourController = asyncHandler(async(req,res)=>{
     try {
         return res.status(200).json(new ApiResponse(200,{},"<Message>"))
@@ -308,5 +386,7 @@ export {
     getAllVideos,
     getMyVideos,
     getVideo,
-    viewVideo
+    viewVideo,
+    engagementVideo,
+    getChannelVideos
 }
