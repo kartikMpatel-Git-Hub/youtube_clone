@@ -109,7 +109,21 @@ const getVideoComments = asyncHandler(async(req,res)=>{
                     },
                     owner : {
                         $first : "$owner"
+                    },
+                    isLiked : {
+                        $cond : { // // For Condition
+                            if : {$in :[req?.user?._id,"$likes.owner"]}, // if for condition
+                            //in for check is field exist on selected document
+                            then : true, // condition true
+                            else : false // conditions false
+                        }
                     }
+                }
+            },
+            {
+                $sort: {
+                    likes : -1,
+                    createdAt: -1
                 }
             }
         ])

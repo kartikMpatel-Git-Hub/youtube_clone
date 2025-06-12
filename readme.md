@@ -7,27 +7,12 @@ A fully-featured backend for a YouTube Clone application developed using **Node.
 
 ## 🚀 Live Deployment
 
+View Project(`frontend` is under-developement  ) : [View](https://kartikmpatelyoutubeclone.netlify.app/)
+
 Backend API is live on: [View](https://youtube-clone-mitq.onrender.com)
+<br>
+Frontend Repository : [View](https://github.com/kartikMpatel-Git-Hub/youtube_clone_react)
 
-
-
-## 🏗️ Project Structure
-
-```
-
-youtube_clone/
-├── public/
-├── src/
-  ├── controllers/         # Business logic for each feature
-  ├── db/                  # Database connection and config
-  ├── middleware/          # Authentication, file handling, etc.
-  ├── models/              # Mongoose models for MongoDB
-  ├── routes/              # API routes organized by feature
-  ├── utils/               # Utility functions and helpers
-  ├── app.js               # express app
-  └── index.js             # Entry point of the application
-
-````
 
 
 
