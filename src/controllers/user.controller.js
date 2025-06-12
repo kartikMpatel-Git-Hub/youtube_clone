@@ -60,8 +60,8 @@ const registerUser = asyncHandler( async (req,res) =>{
         
         const user = await User.create({
             fullName,
-            avatar : avatar.url,
-            coverImage : coverImage?.url || "",
+            avatar : avatar.secure_url,
+            coverImage : coverImage?.secure_url || "",
             email,
             password,
             userName:userName.toLowerCase() 
@@ -128,7 +128,7 @@ const loginUser = asyncHandler(async (req,res)=>{
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "None" : "Lax",
-        maxAge: 24 * 60 * 60 * 1000
+        maxAge: 5 * 60 * 1000
 
 
         // httpOnly: true,
@@ -164,9 +164,12 @@ const logOutUser = asyncHandler(async (req,res)=>{
             new : true
         }
     )
+    const isProduction = process.env.NODE_ENV === "production";
     const options = {
-        HttpOnly : true,
-        secure : true
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "None" : "Lax",
+        maxAge: 5 * 60 * 1000
     }
     return res
             .status(200)
@@ -176,7 +179,7 @@ const logOutUser = asyncHandler(async (req,res)=>{
 })
 
 const refreshAccessToken = asyncHandler(async (req,res)=>{
-    // console.log(req.cookies.refreshToken)
+    // ////console.log(req.cookies.refreshToken)
     if(!req.cookies?.refreshToken && !req.body?.refreshToken)
         res.status(401).json(new ApiError(401,"Please Logged In!"))
         
@@ -195,7 +198,7 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             res.status(401).json(new ApiError(401,"Token Is Expire Or Used!"))
         
         const {accessToken,refreshToken : newRefreshToken} = await gerenateAccessAndRefereshToken(user._id)
-        // console.log(`new Token : ${newRefreshToken}`)
+        // ////console.log(`new Token : ${newRefreshToken}`)
         const options = {
             HttpOnly : true,
             secure : true
@@ -263,7 +266,7 @@ const changeUserEmail = asyncHandler(async(req,res)=>{
 const changeUserUserName = asyncHandler(async(req,res)=>{
     try {
         const {userName} = req.body
-        // console.log(userName)
+        // ////console.log(userName)
         if(!userName)
             res.status(401).json(new ApiError(401,"userName Is Required!!"))
 
@@ -279,7 +282,7 @@ const changeUserUserName = asyncHandler(async(req,res)=>{
             {new : true}
             // This Help When We want to return the object which changed or after update
         ).select("-password")
-        console.log(user)
+        ////console.log(user)
         res.status(200).json(new ApiResponse(200,user,"userName Updated Succesfully !!"))
     } catch (error) {
         res.status(401).json(new ApiError(401,"Something Went Wrong While Changing userName !!"+error.message))
@@ -289,7 +292,7 @@ const changeUserUserName = asyncHandler(async(req,res)=>{
 const changeUserFullName = asyncHandler(async(req,res)=>{
     try {
         const {fullName} = req.body
-        // console.log(userName)
+        // //console.log(userName)
         if(!fullName)
             res.status(401).json(new ApiError(401,"fullName Is Required!!"))
         const user = await User.findByIdAndUpdate(req.user?._id,
@@ -301,7 +304,7 @@ const changeUserFullName = asyncHandler(async(req,res)=>{
             {new : true}
             // This Help When We want to return the object which changed or after update
         ).select("-password")
-        console.log(user)
+        //console.log(user)
         res.status(200).json(new ApiResponse(200,user,"fullName Updated Succesfully !!"))
     } catch (error) {
         res.status(401).json(new ApiError(401,"Something Went Wrong While Changing fullName !!"+error.message))
@@ -320,7 +323,7 @@ const changeUserAvatar = asyncHandler(async (req,res)=>{
         }
         const user = await User.findById(req.user?._id).select("-password -refreshToken")
         const oldImage = user.avatar
-        user.avatar = avatar.url
+        user.avatar = avatar.secure_url
         await user.save({validateBeforeSave : false})
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
@@ -345,7 +348,7 @@ const changeUserCoverImage = asyncHandler(async (req,res)=>{
         }
         const user = await User.findById(req.user?._id).select("-password -refreshToken")
         const oldImage = user.coverImage
-        user.coverImage = coverImage.url
+        user.coverImage = coverImage.secure_url
         await user.save({validateBeforeSave : false})
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
@@ -418,7 +421,7 @@ const getCurrentUser = asyncHandler(async (req,res)=>{
                 }
             }
         ])
-    // console.log(user)
+    // //console.log(user)
     if(!channel?.length)
             res.status(401).json(new ApiError(401,"Chennel Not Found !!"))
 
@@ -428,7 +431,7 @@ const getCurrentUser = asyncHandler(async (req,res)=>{
 const getUserChannelProfile = asyncHandler(async (req,res)=>{
     try {
         const userName = req.params.userName
-        console.log(userName)
+        //console.log(userName)
         if(!userName?.trim())
             res.status(401).json(new ApiError(401,"userName Not Found !!"))
 
@@ -556,7 +559,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
                 }
             }
         ])
-        console.log(user)
+        //console.log(user)
         return res.status(200).json(new ApiResponse(200,user[0].watchHistory,"Your Watch History !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While Getting Data !!"))

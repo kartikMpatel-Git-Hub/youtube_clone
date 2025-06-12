@@ -38,8 +38,8 @@ const uploadVideo = asyncHandler(async(req,res)=>{
         const video = await uploadOnCloud(videoLocalPath)
         const thumbnail = await uploadOnCloud(thumbnailLocalPath)
         
-        // console.log(video)
-        // console.log(thumbnail)
+        console.log(video)
+        console.log(thumbnail)
         
         if(!video || !thumbnail)
             return res.status(500).json(new ApiError(500,"something Went Wrong While Uploading !!"));
@@ -47,8 +47,8 @@ const uploadVideo = asyncHandler(async(req,res)=>{
         const videoUploaded = await Video.create({
             title,
             description,
-            videoFile : video.url,
-            thumbnail : thumbnail.url,
+            videoFile : video.secure_url,
+            thumbnail : thumbnail.secure_url,
             duration : video.duration,
             owner : req.user?._id
         })
@@ -129,7 +129,7 @@ const changeThumbnail = asyncHandler(async(req,res)=>{
         if(!video)
             return res.status(404).json(new ApiError(401,"Video Not Found !!"))
         const oldImage = video.thumbnail
-        video.thumbnail = thumbnail.url
+        video.thumbnail = thumbnail.secure_url
         await video.save()
         let cloudFileName = oldImage.split('/')
         cloudFileName = cloudFileName[cloudFileName.length-1].split('.')[0]
