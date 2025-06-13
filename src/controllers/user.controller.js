@@ -128,7 +128,7 @@ const loginUser = asyncHandler(async (req,res)=>{
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "None" : "Lax",
-        maxAge: 5 * 60 * 1000
+        maxAge: 1 * 24 * 60 * 60 * 1000
 
 
         // httpOnly: true,
@@ -169,7 +169,7 @@ const logOutUser = asyncHandler(async (req,res)=>{
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "None" : "Lax",
-        maxAge: 5 * 60 * 1000
+        maxAge: 1 * 24 * 60 * 60 * 1000
     }
     return res
             .status(200)
