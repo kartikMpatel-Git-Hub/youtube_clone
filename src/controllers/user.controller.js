@@ -95,20 +95,15 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     // if(!req.body || 1 < Object.keys(req.body).length < 4)
     //     return res.status(400).json(new ApiError(400,"All Field Is Required!!"))
-    let {email,userName,password} = req.body
-    if(!email && !userName){
+    let {userId,password} = req.body
+    if(!userId){
         res.status(400).json(new ApiError(400,"Username Or Email Required !!"))
     }
     if(!password){
         res.status(400).json(new ApiError(400,"Enter Password First !!"))
     }
-    // if(email){
-        
-    // }else{
-        
-    // }
     const user = await User.findOne({
-        $or :[{userName},{email}] //check either anyof then is Exist based on it 
+        $or :[{userName : userId},{email : userId}] //check either anyof then is Exist based on it 
     })
 
     if(!user)
