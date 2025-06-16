@@ -3,7 +3,7 @@ import {verifyJWT} from "../middlewares/auth.middleware.js"
 import {upload} from "../middlewares/multer.middleware.js"
 import {uploadVideo,removeVideo,changeTitle,changeThumbnail,changeDescription,
     togglePublishStatus ,getAllVideos,getMyVideos,getVideo,viewVideo,engagementVideo,
-    getChannelVideos} from "../controllers/video.controller.js"
+    getChannelVideos,getSerachResult} from "../controllers/video.controller.js"
 const router = Router()
 
 router.use(verifyJWT)
@@ -22,6 +22,7 @@ router.route("/watchVideo/:videoId").get(viewVideo)
 router.route("/getVideo/:videoId").get(getVideo)
 router.route("/getMyVideos").get(getMyVideos)
 router.route("/getChannelVideos/:userName").get(getChannelVideos)
+router.route("/getSeachVideos/:query").get(getSerachResult)
 router.route("/").get(getAllVideos)
 
 export default router

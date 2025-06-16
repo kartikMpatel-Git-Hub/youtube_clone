@@ -368,6 +368,29 @@ const getChannelVideos = asyncHandler(async(req,res)=>{
     }
 })
 
+const getSerachResult = asyncHandler(async(req,res)=>{
+    try {
+        const query = req.params.query
+        let regex = query.split(" ").join("|")
+        const videos = await Video.aggregate([
+            {
+                $match : {
+                    title : {
+                        $regex : regex,
+                        $options: "i"
+                    }
+                }
+            }
+        ])
+        const searchVideos = []
+        for(let video of videos)
+            searchVideos.push(await getVideoById(video._id))        
+        return res.status(200).json(new ApiResponse(200,searchVideos,"<Message>"))
+    } catch (error) {
+        return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
+    }
+})
+
 const yourController = asyncHandler(async(req,res)=>{
     try {
         return res.status(200).json(new ApiResponse(200,{},"<Message>"))
@@ -388,5 +411,6 @@ export {
     getVideo,
     viewVideo,
     engagementVideo,
-    getChannelVideos
+    getChannelVideos,
+    getSerachResult
 }
