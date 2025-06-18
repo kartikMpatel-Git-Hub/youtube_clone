@@ -1,5 +1,5 @@
 import { Router } from "express"
-import {loginUser, logOutUser, registerUser,refreshAccessToken, changeUserPassword, changeUserUserName, changeUserEmail, changeUserAvatar, changeUserCoverImage, changeUserFullName, getUserChannelProfile, getWatchHistory, getCurrentUser} from "../controllers/user.controller.js"
+import {loginUser, logOutUser, registerUser,refreshAccessToken, changeUserPassword, changeUserUserName, changeUserEmail, changeUserAvatar, changeUserCoverImage, changeUserFullName, getUserChannelProfile, getWatchHistory, getCurrentUser,getSearchChannel} from "../controllers/user.controller.js"
 import {upload} from "../middlewares/multer.middleware.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
@@ -32,5 +32,8 @@ router.route("/newRefreshToken").get(refreshAccessToken)
 router.route("/getCurrentUser").get(verifyJWT,getCurrentUser)
 router.route("/getChannelProfile/:userName").get(verifyJWT,getUserChannelProfile)
 router.route("/getWatchHistory").get(verifyJWT,getWatchHistory)
+router.route("/searchChannel/:query").get(verifyJWT,getSearchChannel)
+router.route("/getSubscribedChannel/:query").get(verifyJWT,getSearchChannel)
 
+// getSubscribedChannel
 export default router
