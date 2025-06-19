@@ -19,6 +19,7 @@ const toggledLikeOnComment = asyncHandler(async(req,res)=>{
                 comment : commentId,
                 owner : req.user?._id 
             })
+            //console.log(like)
             return res.status(200).json(new ApiResponse(200,like,"Like Added !!"))
         }
         return res.status(200).json(new ApiResponse(200,commentLiked,"Like Removed !!"))
@@ -52,14 +53,14 @@ const toggledLikeOnVideo = asyncHandler(async(req,res)=>{
 const toggledLikeOnTweet = asyncHandler(async(req,res)=>{
     try {
         let tweetId = req.params.tweetId
-        console.log(tweetId)
+        //console.log(tweetId)
         if(!tweetId)
             return res.status(300).json(new ApiError(300,"Tweet Id Not Found !!"))
         let tweetLiked = await Like.findOneAndDelete({
             tweet : tweetId,
             owner : req.user?._id   
         })
-        console.log(!tweetLiked)
+        //console.log(!tweetLiked)
         if(!tweetLiked){
             let like = await Like.create({
                 tweet : tweetId,
@@ -114,7 +115,7 @@ const getLikedVideos = asyncHandler(async(req,res)=>{
                 }
             }
         ])
-        // console.log(yourInggement)
+        // //console.log(yourInggement)
         let videos = []
         for(let i = 0; i < yourInggement.length; i++)
             if(yourInggement[i].videos)

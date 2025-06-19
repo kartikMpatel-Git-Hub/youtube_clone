@@ -28,8 +28,8 @@ const addVideo = asyncHandler(async(req,res)=>{
             return res.status(300).json(new ApiError(300,"Video Or Playlist Not Found !!"))
         const video = await Video.findById(videoId)
         const playList = await PlayList.findById(playListId)
-        // console.log(video)
-        // console.log(playList)
+        // //console.log(video)
+        // //console.log(playList)
         if(!video)  
             return res.status(300).json(new ApiError(300,"Video is Not Available!!"))
         if(!playList)  
@@ -58,7 +58,7 @@ const changeDescription = asyncHandler(async(req,res)=>{
         )
         if(!playList)
             return res.status(300).json(new ApiError(300,"Playlist Not Exist!!"))
-        console.log(playList)
+        //console.log(playList)
         return res.status(200).json(new ApiResponse(200,playList,"Description Updated Succesfully"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
@@ -79,7 +79,7 @@ const changeTitle = asyncHandler(async(req,res)=>{
         )
         if(!playList)
             return res.status(300).json(new ApiError(300,"Playlist Not Exist!!"))
-        console.log(playList)
+        //console.log(playList)
         return res.status(200).json(new ApiResponse(200,playList,"title Updated Succesfully"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
@@ -173,7 +173,7 @@ const toggleVisibility = asyncHandler(async(req,res)=>{
         if(!playList)
             return res.status(404).json(new ApiError(404,"Playlist Not Found !"))
         playList.visibility = !playList.visibility
-        console.log(playList)
+        //console.log(playList)
         const response = await playList.save()
         return res.status(200).json(new ApiResponse(200,response,"Status Updated"))
     } catch (error) {

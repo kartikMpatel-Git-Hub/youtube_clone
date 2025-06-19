@@ -207,7 +207,7 @@ const logOutUser = asyncHandler(async (req, res) => {
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  // ////console.log(req.cookies.refreshToken)
+  // //////console.log(req.cookies.refreshToken)
   if (!req.cookies?.refreshToken && !req.body?.refreshToken)
     res.status(401).json(new ApiError(401, "Please Logged In!"))
 
@@ -229,7 +229,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken: newRefreshToken } =
       await gerenateAccessAndRefereshToken(user._id)
-    // ////console.log(`new Token : ${newRefreshToken}`)
+    // //////console.log(`new Token : ${newRefreshToken}`)
     const options = {
       HttpOnly: true,
       secure: true,
@@ -320,7 +320,7 @@ const changeUserEmail = asyncHandler(async (req, res) => {
 const changeUserUserName = asyncHandler(async (req, res) => {
   try {
     const { userName } = req.body
-    // ////console.log(userName)
+    // //////console.log(userName)
     if (!userName)
       res.status(401).json(new ApiError(401, "userName Is Required!!"))
 
@@ -337,7 +337,7 @@ const changeUserUserName = asyncHandler(async (req, res) => {
       { new: true }
       // This Help When We want to return the object which changed or after update
     ).select("-password")
-    ////console.log(user)
+    //////console.log(user)
     res
       .status(200)
       .json(new ApiResponse(200, user, "userName Updated Succesfully !!"))
@@ -356,7 +356,7 @@ const changeUserUserName = asyncHandler(async (req, res) => {
 const changeUserFullName = asyncHandler(async (req, res) => {
   try {
     const { fullName } = req.body
-    // //console.log(userName)
+    // ////console.log(userName)
     if (!fullName)
       res.status(401).json(new ApiError(401, "fullName Is Required!!"))
     const user = await User.findByIdAndUpdate(
@@ -369,7 +369,7 @@ const changeUserFullName = asyncHandler(async (req, res) => {
       { new: true }
       // This Help When We want to return the object which changed or after update
     ).select("-password")
-    //console.log(user)
+    ////console.log(user)
     res
       .status(200)
       .json(new ApiResponse(200, user, "fullName Updated Succesfully !!"))
@@ -531,7 +531,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   //   )
   const userId = req.user?._id
   const channel = await getChannelById(userId)
-  // //console.log(user)
+  // ////console.log(user)
   if (!channel) res.status(401).json(new ApiError(401, "Chennel Not Found !!"))
 
   return res
@@ -599,7 +599,7 @@ const getChannelByName = async (userName, currentUserId) => {
       },
     },
   ])
-  console.log(channel)
+  //console.log(channel)
   return channel
 }
 
@@ -610,7 +610,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       res.status(401).json(new ApiError(401, "userName Not Found !!"))
 
     const channel = await getChannelByName(userName, req.user?._id)
-    console.log(channel)
+    //console.log(channel)
     if (!channel?.length)
       res.status(401).json(new ApiError(401, "Chennel Not Found !!"))
 
@@ -683,7 +683,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         },
       },
     ])
-    //console.log(user)
+    ////console.log(user)
     return res
       .status(200)
       .json(new ApiResponse(200, user[0].watchHistory, "Your Watch History !!"))
@@ -712,7 +712,7 @@ const getSearchChannel = asyncHandler(async (req, res) => {
         },
       },
     ])
-    console.log(channels)
+    //console.log(channels)
     const searchChannels = []
     for (let chennel of channels) {
       searchChannels.push(await getChannelById(chennel._id))

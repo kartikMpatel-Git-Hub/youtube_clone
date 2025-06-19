@@ -36,7 +36,7 @@ const toggleSubscribe = asyncHandler(async(req,res)=>{
 
 const getMySubscribers = asyncHandler(async(req,res)=>{
     try {
-        // console.log()
+        // //console.log()
         const subscribersList = await User.aggregate([
             {
                 $match : {
@@ -234,7 +234,7 @@ const getSubscribed = asyncHandler(async(req,res)=>{
 const getMySubscribed = asyncHandler(async(req,res)=>{
     try {
         const userId  = req.user?._id
-        // console.log(userId)
+        // //console.log(userId)
         const subscribedList = await User.aggregate([
             {
                 $match : {

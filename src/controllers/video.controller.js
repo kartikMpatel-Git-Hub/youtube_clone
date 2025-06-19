@@ -27,19 +27,19 @@ const uploadVideo = asyncHandler(async(req,res)=>{
         else    
             return res.status(400).json(new ApiError(400,"videoFile Is Required !!"));
         
-        // console.log(videoLocalPath)
+        // //console.log(videoLocalPath)
         let thumbnailLocalPath;
         if(req.files && Array.isArray(req.files.thumbnail) && req.files.thumbnail.length > 0)
             thumbnailLocalPath = req.files.thumbnail[0].path
         else    
         return res.status(400).json(new ApiError(400,"thumbnail Is Required !!")); 
-        // console.log(thumbnailLocalPath)
+        // //console.log(thumbnailLocalPath)
         
         const video = await uploadOnCloud(videoLocalPath)
         const thumbnail = await uploadOnCloud(thumbnailLocalPath)
         
-        console.log(video)
-        console.log(thumbnail)
+        //console.log(video)
+        //console.log(thumbnail)
         
         if(!video || !thumbnail)
             return res.status(500).json(new ApiError(500,"something Went Wrong While Uploading !!"));
@@ -67,7 +67,7 @@ const removeVideo = asyncHandler(async(req,res)=>{
         if(!videoId)
             return res.status(401).json(new ApiError(401,"Video id Not Found!!"))
         const video = await Video.findById(videoId)
-        // console.log(video)
+        // //console.log(video)
         if(!video)
             return res.status(404).json(new ApiError(401,"Video Not Found !!")) 
         const thumbnailurl = video.thumbnail
@@ -79,7 +79,7 @@ const removeVideo = asyncHandler(async(req,res)=>{
         const response1 = await removeCloudImage(cloudThumbnail)
         if(!response1)
             return res.status(504).json(new ApiError(501,"Something Went Wrong While Deleting From Cloud !!"))
-        // console.log(cloudVideo)
+        // //console.log(cloudVideo)
         const response2 = await removeCloudVideo(cloudVideo)
         if(!response2)
             return res.status(504).json(new ApiError(501,"Something Went Wrong While Deleting From Cloud !!"))
@@ -121,7 +121,7 @@ const changeThumbnail = asyncHandler(async(req,res)=>{
             return res.status(401).json(new ApiError(401,"Thumbnail Not Found !!"))
         
         const thumbnail = await uploadOnCloud(localThumbnailPath)
-        // console.log(thumbnail)
+        // //console.log(thumbnail)
         if(!thumbnail)
             return res.status(401).json(new ApiError(401,"Problem While Uploading On cloud !!"))
 
@@ -288,20 +288,23 @@ const viewVideo = asyncHandler(async(req,res)=>{
         const video = await Video.findById(videoId)
         if(!video)
             return res.status(404).json(new ApiError(401,"Video Not Found !!"))
-        if(video.owner.toString() === req.user._id.toString() && !video.isPublished){
+        if(req.user && video.owner.toString() === req.user._id.toString() && !video.isPublished){
             return res.status(200).json(new ApiResponse(200,video,"Your Video Fetched !!"))
         }
         if(!video.isPublished)
             return res.status(400).json(new ApiError(401,"Video is Private !!"))
         video.views += 1
         video.save()
-        const user = await User.findByIdAndUpdate(req.user._id,
-            {
-                $addToSet : {
-                    watchHistory : videoId
+        //console.log(req.user)
+        if(req.user){
+            const user = await User.findByIdAndUpdate(req.user._id,
+                {
+                    $addToSet : {
+                        watchHistory : videoId
+                    }
                 }
-            }
-        )
+            )
+        }
         const videoView = await getVideoById(videoId)
         if(!videoView)
             return res.status(400).json(new ApiError(401,"Problem White Getting Video !!"))
@@ -320,7 +323,7 @@ const engagementVideo  = asyncHandler(async(req,res)=>{
         const video = await Video.findById(videoId)
         if(!video)
             return res.status(404).json(new ApiError(401,"Video Not Found !!"))
-        // console.log(videoId)
+        // //console.log(videoId)
         const isLiked = await Like.findOne({
             owner : new mongoose.Types.ObjectId(req.user?._id),
             video : new mongoose.Types.ObjectId(videoId)

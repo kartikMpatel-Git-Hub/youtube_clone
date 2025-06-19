@@ -36,7 +36,7 @@ const editTweet = asyncHandler(async(req,res)=>{
         },{
             new:true
         })
-        // console.log(tweet)
+        // //console.log(tweet)
         if(!tweet)
             return res.status(404).json(new ApiError(401,"Tweet Not Found !!")) 
         return res.status(200).json(new ApiResponse(200,tweet,"Tweet Updated !!"))
@@ -51,7 +51,7 @@ const deleteTweet = asyncHandler(async(req,res)=>{
         if(!tweetId)
             return res.status(401).json(new ApiError(401,"Tweet id Not Found!!"))
         const tweet = await Tweet.findByIdAndDelete(tweetId)
-        // console.log(tweet)
+        // //console.log(tweet)
         if(!tweet)
             return res.status(404).json(new ApiError(401,"Tweet Not Found !!"))
         return res.status(200).json(new ApiResponse(200,tweet,"Tweet Deleted !"))
@@ -114,7 +114,7 @@ const getTweetById = async (tweetId) => {
             }
         }
     ])
-    // console.log(tweet)
+    // //console.log(tweet)
     return tweet[0]
 }
 
@@ -124,7 +124,7 @@ const getTweet = asyncHandler(async(req,res)=>{
         if(!tweetId)
             return res.status(401).json(new ApiError(401,"Tweet id Not Found!!"))
         const tweet = await getTweetById(tweetId)
-        console.log(tweet)
+        //console.log(tweet)
         return res.status(200).json(new ApiResponse(200,tweet,"Your Tweet"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
