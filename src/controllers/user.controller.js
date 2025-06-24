@@ -540,6 +540,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 })
 
 const getChannelByName = async (userName, currentUserId) => {
+  console.log(currentUserId)
   const channel = await User.aggregate([
     {
       $match: {
@@ -577,7 +578,7 @@ const getChannelByName = async (userName, currentUserId) => {
         isSubscribed: {
           $cond: {
             // // For Condition
-            if: { $in: [currentUserId, "$subscribers.subscriber"] }, // if for condition
+            if: { $in: [new mongoose.Types.ObjectId(currentUserId), "$subscribers.subscriber"] }, // if for condition
             //in for check is field exist on selected document
             then: true, // condition true
             else: false, // conditions false
@@ -599,7 +600,7 @@ const getChannelByName = async (userName, currentUserId) => {
       },
     },
   ])
-  //console.log(channel)
+  // console.log(channel)
   return channel
 }
 
