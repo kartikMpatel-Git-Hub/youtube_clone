@@ -6,12 +6,14 @@ import { Video } from "../models/video.model.js"
 
 const createPlayList = asyncHandler(async(req,res)=>{
     try {
-        const {title,description} = req.body
-        if(!title)
+        const {title,description,visibility} = req.body
+        //console.log(visibility)
+        if(!title || !description)
             return res.status(300).json(new ApiError(300,"Playlist title Not Found "))
         const playList = await PlayList.create({
             title,
             description,
+            visibility : visibility === 'public' | false,
             owner : req.user._id
         })
         return res.status(200).json(new ApiResponse(200,playList,"playlist Created"))
@@ -29,7 +31,7 @@ const addVideo = asyncHandler(async(req,res)=>{
         const video = await Video.findById(videoId)
         const playList = await PlayList.findById(playListId)
         // //console.log(video)
-        // //console.log(playList)
+        // console.log(playList)
         if(!video)  
             return res.status(300).json(new ApiError(300,"Video is Not Available!!"))
         if(!playList)  
@@ -38,6 +40,7 @@ const addVideo = asyncHandler(async(req,res)=>{
             {$addToSet :{video : videoId}},
             {new : true}
         )
+        //console.log(response)
         return res.status(200).json(new ApiResponse(200,response,"Video Added !!"))
     } catch (error) {
         return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
