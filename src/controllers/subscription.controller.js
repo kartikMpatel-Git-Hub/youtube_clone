@@ -256,11 +256,27 @@ const getMySubscribed = asyncHandler(async(req,res)=>{
                                 as : "subscribed",
                                 pipeline : [
                                     {
+                                        $lookup : {
+                                            from : "subscriptions",
+                                            localField : "_id",
+                                            foreignField : "channel",
+                                            as : "subscribers"
+                                        }
+                                    },
+                                    {
+                                        $addFields : {
+                                            subscribers : {
+                                                $size : "$subscribers"
+                                            }
+                                        }
+                                    },
+                                    {
                                         $project : {
                                             userName : 1,
                                             email : 1,
                                             fullName : 1,
                                             avatar : 1,
+                                            subscribers : 1
                                         }
                                     }
                                 ]
@@ -285,11 +301,12 @@ const getMySubscribed = asyncHandler(async(req,res)=>{
             },
             {
                 $project : {
-                    userName : 1,
-                    email : 1,
-                    fullName : 1,
-                    avatar : 1,
-                    coverImage : 1,
+                    _id : 0,
+                    // userName : 1,
+                    // email : 1,
+                    // fullName : 1,
+                    // avatar : 1,
+                    // coverImage : 1,
                     subscribeds : 1
                 }
             }

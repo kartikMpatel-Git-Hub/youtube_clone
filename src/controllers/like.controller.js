@@ -74,60 +74,6 @@ const toggledLikeOnTweet = asyncHandler(async(req,res)=>{
     }
 })
 
-const getLikedVideos = asyncHandler(async(req,res)=>{
-    try {
-        let userId = req.user?._id
-        if(!userId)
-            return res.status(300).json(new ApiError(300,"User Not Found !!"))
-
-        let yourInggement = await Like.aggregate([
-            {
-                $match : {
-                    owner : new mongoose.Types.ObjectId(userId)
-                }
-            },
-            {
-                $lookup : {
-                    from : "videos",
-                    localField : "video",
-                    foreignField : "_id",
-                    as : "videos",
-                    pipeline : [
-                        {
-                            $match : {
-                                isPublished : true
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                $addFields : {
-                    videos : {
-                        $first : "$videos"
-                    }
-                }
-            },
-            {
-                $project : {
-                    _id : 1,
-                    videos : 1,
-                }
-            }
-        ])
-        // //console.log(yourInggement)
-        let videos = []
-        for(let i = 0; i < yourInggement.length; i++)
-            if(yourInggement[i].videos)
-                videos.push(yourInggement[i])
-        if(videos.length == 0)
-            return res.status(200).json(new ApiResponse(200,videos,"Your Like Not Found In Any Video"))
-        return res.status(200).json(new ApiResponse(200,videos,"Your Liked Videos"))
-    } catch (error) {
-        return res.status(401).json(new ApiError(401,"Something Went Wrong While..!!"))
-    }
-})
-
 const yourController = asyncHandler(async(req,res)=>{
     try {
         return res.status(200).json(new ApiResponse(200,{},"<Message>"))
@@ -137,4 +83,4 @@ const yourController = asyncHandler(async(req,res)=>{
 })
 
 
-export { toggledLikeOnComment,toggledLikeOnVideo,toggledLikeOnTweet,getLikedVideos }
+export { toggledLikeOnComment,toggledLikeOnVideo,toggledLikeOnTweet}

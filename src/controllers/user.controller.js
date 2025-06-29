@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/apiError.js"
 import { User } from "../models/user.model.js"
+import { Like } from "../models/like.model.js"
 import { uploadOnCloud, removeCloudImage } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
@@ -143,7 +144,7 @@ const loginUser = asyncHandler(async (req, res) => {
   )
 
   const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken"
+    "-password -refreshToken -watchHistory"
   )
   //Sending Cookies
   const isProduction = process.env.NODE_ENV === "production"
@@ -540,7 +541,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 })
 
 const getChannelByName = async (userName, currentUserId) => {
-  console.log(currentUserId)
+  // console.log(currentUserId)
   const channel = await User.aggregate([
     {
       $match: {
@@ -578,7 +579,12 @@ const getChannelByName = async (userName, currentUserId) => {
         isSubscribed: {
           $cond: {
             // // For Condition
-            if: { $in: [new mongoose.Types.ObjectId(currentUserId), "$subscribers.subscriber"] }, // if for condition
+            if: {
+              $in: [
+                new mongoose.Types.ObjectId(currentUserId),
+                "$subscribers.subscriber",
+              ],
+            }, // if for condition
             //in for check is field exist on selected document
             then: true, // condition true
             else: false, // conditions false
@@ -680,11 +686,15 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                 },
               },
             },
+            {
+              $sort: {
+                updatedAt: -1, // sort videos by newest first
+              },
+            },
           ],
         },
       },
     ])
-    ////console.log(user)
     return res
       .status(200)
       .json(new ApiResponse(200, user[0].watchHistory, "Your Watch History !!"))
@@ -692,6 +702,129 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     return res
       .status(401)
       .json(new ApiError(401, "Something Went Wrong While Getting Data !!"))
+  }
+})
+
+const addToHistory = asyncHandler(async (req, res) => {
+  try {
+    let videoId = req.params.videoId
+    // console.log(req.user)
+    if (req.user) {
+      await User.findByIdAndUpdate(req.user._id, {
+        $pull: { watchHistory: videoId },
+      })
+      const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          $push: {
+            watchHistory: {
+              $each: [videoId],
+              $position: 0,
+            },
+          },
+        },
+        { new: true }
+      )
+      // console.log("New\n")
+      // console.log(user)
+      return res.status(200).json(new ApiResponse(200, user, "Video Added !!"))
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(400, {}, "Something went Wrong !!"))
+  } catch (error) {
+    return res
+      .status(401)
+      .json(new ApiError(401, "Something Went Wrong While..!!"))
+  }
+})
+
+const getLikedVideos = asyncHandler(async (req, res) => {
+  try {
+    let userId = req.user?._id
+    // console.log(req.user)
+    if (!userId)
+      return res.status(300).json(new ApiError(300, "User Not Found !!"))
+
+    let yourInggement = await Like.aggregate([
+      {
+        $match: {
+          owner: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "videos",
+          localField: "video",
+          foreignField: "_id",
+          as: "videos",
+          pipeline: [
+            {
+              $match: {
+                isPublished: true,
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                foreignField: "_id",
+                localField: "owner",
+                as: "owner",
+                pipeline: [
+                  {
+                    $project: {
+                      fullName: 1,
+                      userName: 1,
+                      avatar: 1,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $addFields: {
+                owner: {
+                  $first: "$owner",
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          videos: {
+            $first: "$videos",
+          },
+        },
+      },
+      {
+        $sort: {
+          updatedAt: -1, // sort videos by newest first
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          videos: 1,
+        },
+      },
+    ])
+    // //console.log(yourInggement)
+    let videos = []
+    for (let i = 0; i < yourInggement.length; i++)
+      if (yourInggement[i].videos) videos.push(yourInggement[i])
+    if (videos.length == 0)
+      return res
+        .status(200)
+        .json(new ApiResponse(200, videos, "Your Like Not Found In Any Video"))
+    return res
+      .status(200)
+      .json(new ApiResponse(200, videos, "Your Liked Videos"))
+  } catch (error) {
+    return res
+      .status(401)
+      .json(new ApiError(401, "Something Went Wrong While..!!"))
   }
 })
 
@@ -743,5 +876,6 @@ export {
   getUserChannelProfile,
   getWatchHistory,
   getSearchChannel,
-  
+  addToHistory,
+  getLikedVideos,
 }
