@@ -4,6 +4,7 @@ import { ApiError } from "../utils/apiError.js"
 import { PlayList } from "../models/playlist.model.js"
 import { Video } from "../models/video.model.js"
 import mongoose from "mongoose"
+import { User } from "../models/user.model.js"
 
 const createPlayList = asyncHandler(async (req, res) => {
   try {
@@ -313,9 +314,30 @@ const toggleVisibility = asyncHandler(async (req, res) => {
   }
 }) //
 
-const yourController = asyncHandler(async (req, res) => {
+const getChannelPlaylists = asyncHandler(async (req, res) => {
   try {
-    return res.status(200).json(new ApiResponse(200, {}, "<Message>"))
+    const userName = req.params.userName
+    const userPlaylists = await User.aggregate([
+      {
+        $match : {
+          userName
+        }
+      },
+      {
+        $lookup : {
+          from : "playlists",
+          localField : "_id",
+          foreignField : "owner",
+          as : "playlists"
+        }
+      }
+    ])
+    const list = []
+    for(let i = 0; i < userPlaylists[0].playlists.length; i++){
+      if(userPlaylists[0].playlists[i].visibility)
+        list.push(await getPlaylistById(userPlaylists[0].playlists[i]._id))
+    }
+    return res.status(200).json(new ApiResponse(200, list, "Channel Playlists"))
   } catch (error) {
     return res
       .status(401)
@@ -333,4 +355,5 @@ export {
   getPlayList,
   deletePlayList,
   toggleVisibility,
+  getChannelPlaylists
 }
