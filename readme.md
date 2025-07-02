@@ -13,6 +13,39 @@ Backend API is live on: [View](https://youtube-clone-mitq.onrender.com)
 <br>
 Frontend Repository : [View](https://github.com/kartikMpatel-Git-Hub/youtube_clone_react)
 
+# 🎬 YouTube Clone Backend
+
+This is the **backend** of a YouTube-inspired video streaming platform built using **Node.js**, **Express.js**, and **MongoDB**. It supports features such as video uploads, playlists, subscriptions, likes/dislikes, comments, user authentication, and more.
+
+## 🚀 Features
+
+- ✅ User authentication & authorization (JWT)
+- 📹 Video upload with thumbnail (Cloudinary)
+- 💾 MongoDB-based storage & retrieval
+- ❤️ Like/Dislike system
+- 📁 Playlist creation and management
+- 💬 Comments on videos
+- 🔔 Subscribe to channels
+- 📜 Watch history & recently watched
+- 🧾 Video reports
+- 👤 Channel info and subscriptions
+- 🔐 Secured API routes
+
+## 🛠️ Tech Stack
+
+| Technology | Description |
+|-----------|-------------|
+| ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) | JavaScript runtime |
+| ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | Web framework for Node.js |
+| ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) | NoSQL Database |
+| ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white) | MongoDB ODM |
+| ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white) | Cloud-based media storage |
+| ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) | JSON Web Tokens for auth |
+| ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white) | API testing |
+
+## 📂 Project Structure
+
+
 
 
 
