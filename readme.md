@@ -1,5 +1,5 @@
 
-# 🎥 YouTube Clone – Node.js Backend
+# 🎥 Stream Vault(YouTube Clone[Old Name]) – Node.js Backend
 
 A fully-featured backend for a YouTube Clone application developed using **Node.js**, following best practices in architecture, security, and modularity. This backend powers essential features such as video streaming, commenting, liking, subscriptions, playlists, and user management.
 
@@ -7,11 +7,11 @@ A fully-featured backend for a YouTube Clone application developed using **Node.
 
 ## 🚀 Live Deployment
 
-View Project(`frontend` is under-developement  ) : [View](https://kartikmpatelyoutubeclone.netlify.app/)
+View Project : [View](https://streamvaultstreaming.netlify.app/)
 
-Backend API is live on: [View](https://youtube-clone-mitq.onrender.com)
+Backend API is live on: Render
 <br>
-Frontend Repository : [View](https://github.com/kartikMpatel-Git-Hub/youtube_clone_react)
+Frontend Repository : [View](https://github.com/kartikMpatel-Git-Hub/StreamVault_Frontend)
 
 # 🎬 YouTube Clone Backend
 
